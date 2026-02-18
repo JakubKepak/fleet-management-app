@@ -147,5 +147,6 @@
   "health.colSpeeding": "Speeding",
 
   "insights.title": "AI Insights",
+  "insights.button": "AI Insights",
   "insights.error": "AI insights temporarily unavailable"
 }

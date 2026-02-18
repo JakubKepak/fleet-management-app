@@ -29,14 +29,14 @@ async function fetchInsights(
   return response.json()
 }
 
-export function useAIInsights(module: InsightModule, data: Record<string, unknown> | null) {
+export function useAIInsights(module: InsightModule, data: Record<string, unknown> | null, enabled = true) {
   const { locale } = useLocale()
   const dataHash = data ? hashData(data) : ''
 
   return useQuery({
     queryKey: insightKeys.byModule(module, dataHash),
     queryFn: () => fetchInsights(module, data!, locale),
-    enabled: !!data && Object.keys(data).length > 0,
+    enabled: enabled && !!data && Object.keys(data).length > 0,
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
     retry: 1,

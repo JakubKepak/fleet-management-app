@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
-import { Alert, Card, Row, Col } from 'antd'
+import { Alert, Button, Card, Row, Col } from 'antd'
 import {
+  BulbOutlined,
   CarOutlined,
   PauseCircleOutlined,
   ToolOutlined,
@@ -54,23 +55,10 @@ function StatCard({ icon, label, value, subtitle, color, bgColor }: StatCardProp
 export default function DashboardPage() {
   const intl = useIntl()
   const [focusedVehicleCode, setFocusedVehicleCode] = useState<string | null>(null)
+  const [showInsights, setShowInsights] = useState(false)
   const { data: groups, isLoading: groupsLoading } = useGroups()
   const groupCode = groups?.[0]?.Code ?? ''
   const { data: vehicles, isLoading: vehiclesLoading, error } = useVehicles(groupCode)
-
-  if (groupsLoading || vehiclesLoading) {
-    return <DashboardSkeleton />
-  }
-
-  if (error) {
-    return (
-      <Alert
-        type="error"
-        message={intl.formatMessage({ id: 'dashboard.loadError' })}
-        description={String(error)}
-      />
-    )
-  }
 
   const stats = getFleetStats(vehicles ?? [])
   const insightData = useMemo(() => ({
@@ -80,15 +68,38 @@ export default function DashboardPage() {
     total: stats.total,
   }), [stats.active, stats.idle, stats.inactive, stats.total])
 
+  if (groupsLoading || vehiclesLoading) {
+    return <DashboardSkeleton />
+  }
+
+  if (error) {
+    return (
+      <Alert
+        type="error"
+        title={intl.formatMessage({ id: 'dashboard.loadError' })}
+        description={String(error)}
+      />
+    )
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-3rem)]">
-      <div className="mb-6 shrink-0">
-        <h1 className="text-2xl font-bold text-gray-900 m-0">
-          {intl.formatMessage({ id: 'dashboard.title' })}
-        </h1>
-        <p className="text-gray-500 text-sm mt-1 mb-0">
-          {intl.formatMessage({ id: 'dashboard.subtitle' })}
-        </p>
+      <div className="flex items-start justify-between flex-wrap gap-4 mb-6 shrink-0">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 m-0">
+            {intl.formatMessage({ id: 'dashboard.title' })}
+          </h1>
+          <p className="text-gray-500 text-sm mt-1 mb-0">
+            {intl.formatMessage({ id: 'dashboard.subtitle' })}
+          </p>
+        </div>
+        <Button
+          icon={<BulbOutlined />}
+          onClick={() => setShowInsights(v => !v)}
+          type={showInsights ? 'primary' : 'default'}
+        >
+          {intl.formatMessage({ id: 'insights.button' })}
+        </Button>
       </div>
 
       <Row gutter={[16, 16]} className="shrink-0">
@@ -134,9 +145,11 @@ export default function DashboardPage() {
         </Col>
       </Row>
 
-      <div className="mt-6 shrink-0">
-        <InsightCards module="dashboard" data={insightData} />
-      </div>
+      {showInsights && (
+        <div className="mt-6 shrink-0">
+          <InsightCards module="dashboard" data={insightData} visible={showInsights} />
+        </div>
+      )}
 
       <Row gutter={[16, 16]} className="mt-6 flex-1 min-h-0">
         <Col xs={24} lg={16} className="h-full">

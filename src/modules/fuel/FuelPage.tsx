@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { Alert, Card, DatePicker, Row, Col } from 'antd'
+import { Alert, Button, Card, DatePicker, Row, Col } from 'antd'
 import {
+  BulbOutlined,
   ThunderboltOutlined,
   DollarOutlined,
   DashboardOutlined,
@@ -69,6 +70,7 @@ export default function FuelPage() {
   const intl = useIntl()
   const [searchParams, setSearchParams] = useSearchParams()
   const dateRange = parseDateRange(searchParams)
+  const [showInsights, setShowInsights] = useState(false)
 
   const setDateRange = useCallback((range: [Dayjs, Dayjs]) => {
     setSearchParams({
@@ -114,7 +116,7 @@ export default function FuelPage() {
     return (
       <Alert
         type="error"
-        message={intl.formatMessage({ id: 'fuel.loadError' })}
+        title={intl.formatMessage({ id: 'fuel.loadError' })}
         description={String(error)}
       />
     )
@@ -131,23 +133,32 @@ export default function FuelPage() {
             {intl.formatMessage({ id: 'fuel.subtitle' })}
           </p>
         </div>
-        <RangePicker
-          value={dateRange}
-          onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}
-          onChange={(dates) => {
-            if (dates?.[0] && dates?.[1]) {
-              setDateRange([dates[0], dates[1]])
-            }
-            setPickerDates([null, null])
-          }}
-          allowClear={false}
-          disabledDate={(current) => {
-            if (current.isAfter(dayjs())) return true
-            const selected = pickerDates[0] ?? pickerDates[1]
-            if (!selected) return false
-            return Math.abs(current.diff(selected, 'day')) > MAX_RANGE_DAYS
-          }}
-        />
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            icon={<BulbOutlined />}
+            onClick={() => setShowInsights(v => !v)}
+            type={showInsights ? 'primary' : 'default'}
+          >
+            {intl.formatMessage({ id: 'insights.button' })}
+          </Button>
+          <RangePicker
+            value={dateRange}
+            onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}
+            onChange={(dates) => {
+              if (dates?.[0] && dates?.[1]) {
+                setDateRange([dates[0], dates[1]])
+              }
+              setPickerDates([null, null])
+            }}
+            allowClear={false}
+            disabledDate={(current) => {
+              if (current.isAfter(dayjs())) return true
+              const selected = pickerDates[0] ?? pickerDates[1]
+              if (!selected) return false
+              return Math.abs(current.diff(selected, 'day')) > MAX_RANGE_DAYS
+            }}
+          />
+        </div>
       </div>
 
       <Row gutter={[16, 16]}>
@@ -193,7 +204,7 @@ export default function FuelPage() {
         </Col>
       </Row>
 
-      <InsightCards module="fuel" data={useMemo(() => ({
+      <InsightCards module="fuel" visible={showInsights} data={useMemo(() => ({
         summary: { ...summary },
         vehicles: vehicleRows.map(v => ({
           name: v.vehicleName,

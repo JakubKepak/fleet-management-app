@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { Alert, Card, DatePicker, Row, Col, Progress } from 'antd'
+import { Alert, Button, Card, DatePicker, Row, Col, Progress } from 'antd'
 import {
+  BulbOutlined,
   HeartOutlined,
   CarOutlined,
   WarningOutlined,
@@ -88,6 +89,7 @@ export default function HealthPage() {
   const intl = useIntl()
   const [searchParams, setSearchParams] = useSearchParams()
   const dateRange = parseDateRange(searchParams)
+  const [showInsights, setShowInsights] = useState(false)
 
   const setDateRange = useCallback((range: [Dayjs, Dayjs]) => {
     setSearchParams({
@@ -138,7 +140,7 @@ export default function HealthPage() {
     return (
       <Alert
         type="error"
-        message={intl.formatMessage({ id: 'health.loadError' })}
+        title={intl.formatMessage({ id: 'health.loadError' })}
         description={String(error)}
       />
     )
@@ -155,23 +157,32 @@ export default function HealthPage() {
             {intl.formatMessage({ id: 'health.subtitle' })}
           </p>
         </div>
-        <RangePicker
-          value={dateRange}
-          onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}
-          onChange={(dates) => {
-            if (dates?.[0] && dates?.[1]) {
-              setDateRange([dates[0], dates[1]])
-            }
-            setPickerDates([null, null])
-          }}
-          allowClear={false}
-          disabledDate={(current) => {
-            if (current.isAfter(dayjs())) return true
-            const selected = pickerDates[0] ?? pickerDates[1]
-            if (!selected) return false
-            return Math.abs(current.diff(selected, 'day')) > MAX_RANGE_DAYS
-          }}
-        />
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            icon={<BulbOutlined />}
+            onClick={() => setShowInsights(v => !v)}
+            type={showInsights ? 'primary' : 'default'}
+          >
+            {intl.formatMessage({ id: 'insights.button' })}
+          </Button>
+          <RangePicker
+            value={dateRange}
+            onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}
+            onChange={(dates) => {
+              if (dates?.[0] && dates?.[1]) {
+                setDateRange([dates[0], dates[1]])
+              }
+              setPickerDates([null, null])
+            }}
+            allowClear={false}
+            disabledDate={(current) => {
+              if (current.isAfter(dayjs())) return true
+              const selected = pickerDates[0] ?? pickerDates[1]
+              if (!selected) return false
+              return Math.abs(current.diff(selected, 'day')) > MAX_RANGE_DAYS
+            }}
+          />
+        </div>
       </div>
 
       <Row gutter={[16, 16]}>
@@ -217,7 +228,7 @@ export default function HealthPage() {
         </Col>
       </Row>
 
-      <InsightCards module="health" data={useMemo(() => ({
+      <InsightCards module="health" visible={showInsights} data={useMemo(() => ({
         summary: { ...summary },
         vehicles: healthData.map(v => ({
           name: v.vehicleName,

@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { Alert, Card, DatePicker, Select, Row, Col } from 'antd'
+import { Alert, Button, Card, DatePicker, Select, Row, Col } from 'antd'
 import {
+  BulbOutlined,
   CarOutlined,
   UserOutlined,
   DashboardOutlined,
@@ -63,6 +64,7 @@ export default function FleetPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const dateRange = parseDateRange(searchParams)
   const [selectedVehicle, setSelectedVehicle] = useState<string>('all')
+  const [showInsights, setShowInsights] = useState(false)
 
   const setDateRange = useCallback((range: [Dayjs, Dayjs]) => {
     setSearchParams(prev => {
@@ -119,7 +121,7 @@ export default function FleetPage() {
     return (
       <Alert
         type="error"
-        message={intl.formatMessage({ id: 'fleet.loadError' })}
+        title={intl.formatMessage({ id: 'fleet.loadError' })}
         description={String(error)}
       />
     )
@@ -137,6 +139,13 @@ export default function FleetPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            icon={<BulbOutlined />}
+            onClick={() => setShowInsights(v => !v)}
+            type={showInsights ? 'primary' : 'default'}
+          >
+            {intl.formatMessage({ id: 'insights.button' })}
+          </Button>
           <Select
             value={selectedVehicle}
             onChange={setSelectedVehicle}
@@ -205,7 +214,7 @@ export default function FleetPage() {
         </Col>
       </Row>
 
-      <InsightCards module="fleet" data={useMemo(() => ({
+      <InsightCards module="fleet" visible={showInsights} data={useMemo(() => ({
         trips: trips.length,
         totalDistance: totalDistance,
         uniqueVehicles,

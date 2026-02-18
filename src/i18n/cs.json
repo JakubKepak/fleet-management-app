@@ -147,5 +147,6 @@
   "health.colSpeeding": "Překročení",
 
   "insights.title": "AI Doporučení",
+  "insights.button": "AI Analýza",
   "insights.error": "AI doporučení dočasně nedostupná"
 }

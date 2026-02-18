@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { Alert, DatePicker } from 'antd'
+import { Alert, Button, DatePicker } from 'antd'
+import { BulbOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useIntl } from 'react-intl'
 import { useSearchParams } from 'react-router-dom'
@@ -32,6 +33,7 @@ export default function DriversPage() {
   const intl = useIntl()
   const [searchParams, setSearchParams] = useSearchParams()
   const dateRange = parseDateRange(searchParams)
+  const [showInsights, setShowInsights] = useState(false)
 
   const setDateRange = useCallback((range: [Dayjs, Dayjs]) => {
     setSearchParams({
@@ -73,7 +75,7 @@ export default function DriversPage() {
     return (
       <Alert
         type="error"
-        message={intl.formatMessage({ id: 'drivers.loadError' })}
+        title={intl.formatMessage({ id: 'drivers.loadError' })}
         description={String(error)}
       />
     )
@@ -90,28 +92,37 @@ export default function DriversPage() {
             {intl.formatMessage({ id: 'drivers.subtitle' })}
           </p>
         </div>
-        <RangePicker
-          value={dateRange}
-          onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}
-          onChange={(dates) => {
-            if (dates?.[0] && dates?.[1]) {
-              setDateRange([dates[0], dates[1]])
-            }
-            setPickerDates([null, null])
-          }}
-          allowClear={false}
-          disabledDate={(current) => {
-            if (current.isAfter(dayjs())) return true
-            const selected = pickerDates[0] ?? pickerDates[1]
-            if (!selected) return false
-            return Math.abs(current.diff(selected, 'day')) > MAX_RANGE_DAYS
-          }}
-        />
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            icon={<BulbOutlined />}
+            onClick={() => setShowInsights(v => !v)}
+            type={showInsights ? 'primary' : 'default'}
+          >
+            {intl.formatMessage({ id: 'insights.button' })}
+          </Button>
+          <RangePicker
+            value={dateRange}
+            onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}
+            onChange={(dates) => {
+              if (dates?.[0] && dates?.[1]) {
+                setDateRange([dates[0], dates[1]])
+              }
+              setPickerDates([null, null])
+            }}
+            allowClear={false}
+            disabledDate={(current) => {
+              if (current.isAfter(dayjs())) return true
+              const selected = pickerDates[0] ?? pickerDates[1]
+              if (!selected) return false
+              return Math.abs(current.diff(selected, 'day')) > MAX_RANGE_DAYS
+            }}
+          />
+        </div>
       </div>
 
       <TopDrivers drivers={driverStats} loading={isLoading} />
 
-      <InsightCards module="drivers" data={useMemo(() => ({
+      <InsightCards module="drivers" visible={showInsights} data={useMemo(() => ({
         drivers: driverStats.map(d => ({
           name: d.name,
           score: d.score,

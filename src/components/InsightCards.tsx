@@ -19,17 +19,18 @@ const severityConfig: Record<InsightSeverity, { color: string; bgColor: string; 
 interface InsightCardsProps {
   module: InsightModule
   data: Record<string, unknown> | null
+  visible: boolean
 }
 
-export default function InsightCards({ module, data }: InsightCardsProps) {
+export default function InsightCards({ module, data, visible }: InsightCardsProps) {
   const intl = useIntl()
-  const { data: response, isLoading, error } = useAIInsights(module, data)
+  const { data: response, isLoading, error } = useAIInsights(module, data, visible)
 
-  if (!data) return null
+  if (!visible || !data) return null
 
   if (isLoading) {
     return (
-      <Row gutter={[16, 16]} className="mb-6">
+      <Row gutter={[16, 16]}>
         {[0, 1].map(i => (
           <Col xs={24} lg={12} key={i}>
             <Card styles={{ body: { padding: '16px' } }}>
@@ -43,14 +44,12 @@ export default function InsightCards({ module, data }: InsightCardsProps) {
 
   if (error) {
     return (
-      <div className="mb-6">
-        <Alert
-          type="info"
-          message={intl.formatMessage({ id: 'insights.error' })}
-          showIcon
-          closable
-        />
-      </div>
+      <Alert
+        type="info"
+        title={intl.formatMessage({ id: 'insights.error' })}
+        showIcon
+        closable
+      />
     )
   }
 
@@ -58,7 +57,7 @@ export default function InsightCards({ module, data }: InsightCardsProps) {
   if (!insights?.length) return null
 
   return (
-    <div className="mb-6">
+    <div>
       <div className="flex items-center gap-2 mb-3">
         <BulbOutlined className="text-blue-500" />
         <span className="text-sm font-medium text-gray-500">
