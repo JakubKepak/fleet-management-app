@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://a1.gpsguard.eu/api/v1'
+const RAW_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://a1.gpsguard.eu'
+const API_BASE_URL = RAW_BASE.replace(/\/+$/, '') + '/api/v1'
 const API_USERNAME = import.meta.env.VITE_API_USERNAME ?? ''
 const API_PASSWORD = import.meta.env.VITE_API_PASSWORD ?? ''
 
