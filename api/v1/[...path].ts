@@ -8,31 +8,22 @@ function proxyRequest(
   auth: string,
   method: string,
   body?: string
-): Promise<{ status: number; headers: Record<string, string>; body: string; bodyLength: number }> {
+): Promise<{ status: number; body: string }> {
   return new Promise((resolve, reject) => {
-    const options: https.RequestOptions = {
+    const req = https.request(url, {
       method,
       headers: {
         Authorization: auth,
         Accept: 'application/json',
         'Accept-Encoding': 'identity',
       },
-    }
-
-    const req = https.request(url, options, (resp) => {
+    }, (resp) => {
       const chunks: Buffer[] = []
       resp.on('data', (chunk: Buffer) => chunks.push(chunk))
       resp.on('end', () => {
-        const buf = Buffer.concat(chunks)
-        const respHeaders: Record<string, string> = {}
-        for (const [key, val] of Object.entries(resp.headers)) {
-          if (typeof val === 'string') respHeaders[key] = val
-        }
         resolve({
           status: resp.statusCode ?? 500,
-          headers: respHeaders,
-          body: buf.toString('utf-8'),
-          bodyLength: buf.length,
+          body: Buffer.concat(chunks).toString('utf-8'),
         })
       })
       resp.on('error', reject)
@@ -46,40 +37,23 @@ function proxyRequest(
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const { path } = req.query
-    const apiPath = Array.isArray(path) ? path.join('/') : (path ?? '')
-    const qs = req.url?.includes('?') ? '?' + req.url.split('?')[1] : ''
-    const target = `${API_BASE}/${apiPath}${qs}`
+    // Extract path after /api/v1/ from the actual URL, ignoring Vercel's query params
+    const urlPath = (req.url ?? '').split('?')[0]
+    const apiPath = urlPath.replace(/^\/api\/v1\/?/, '')
+    const target = apiPath ? `${API_BASE}/${apiPath}` : `${API_BASE}`
+
+    // Forward only real query params (exclude Vercel's internal ...path param)
+    const url = new URL(req.url ?? '/', `https://${req.headers.host}`)
+    url.searchParams.delete('...path')
+    const qs = url.searchParams.toString()
+    const fullTarget = qs ? `${target}?${qs}` : target
 
     const username = process.env.API_USERNAME ?? ''
     const password = process.env.API_PASSWORD ?? ''
     const auth = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')
 
-    // Debug mode: add ?debug=1 to see diagnostics
-    if (req.query.debug === '1') {
-      res.status(200).json({
-        target,
-        hasUsername: username.length > 0,
-        hasPassword: password.length > 0,
-        authHeader: auth.substring(0, 15) + '...',
-      })
-      return
-    }
-
     const reqBody = req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined
-    const upstream = await proxyRequest(target, auth, req.method ?? 'GET', reqBody)
-
-    // Debug mode: add ?debug=2 to see upstream response info
-    if (req.query.debug === '2') {
-      res.status(200).json({
-        target,
-        upstreamStatus: upstream.status,
-        upstreamHeaders: upstream.headers,
-        upstreamBodyLength: upstream.bodyLength,
-        upstreamBodyPreview: upstream.body.substring(0, 200),
-      })
-      return
-    }
+    const upstream = await proxyRequest(fullTarget, auth, req.method ?? 'GET', reqBody)
 
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Cache-Control', 'no-store')
@@ -87,6 +61,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(upstream.status).send(upstream.body)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
-    res.status(502).json({ error: message, stack: err instanceof Error ? err.stack : undefined })
+    res.status(502).json({ error: message })
   }
 }
