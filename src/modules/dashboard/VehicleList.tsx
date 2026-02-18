@@ -1,5 +1,5 @@
-import { Card, Tag } from 'antd'
-import { CarOutlined, DashboardOutlined } from '@ant-design/icons'
+import { Card, Tag, Tooltip } from 'antd'
+import { CarOutlined, DashboardOutlined, AimOutlined } from '@ant-design/icons'
 import { useIntl } from 'react-intl'
 import type { Vehicle } from '@/types/api'
 
@@ -11,9 +11,10 @@ function getStatusDotColor(vehicle: Vehicle): string {
 
 interface VehicleListProps {
   vehicles: Vehicle[]
+  onLocate?: (vehicleCode: string) => void
 }
 
-export default function VehicleList({ vehicles }: VehicleListProps) {
+export default function VehicleList({ vehicles, onLocate }: VehicleListProps) {
   const intl = useIntl()
 
   function getStatusTag(vehicle: Vehicle) {
@@ -53,6 +54,14 @@ export default function VehicleList({ vehicles }: VehicleListProps) {
               </div>
             </div>
             {getStatusTag(v)}
+            <Tooltip title={intl.formatMessage({ id: 'vehicles.locate' })}>
+              <button
+                onClick={() => onLocate?.(v.Code)}
+                className="flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer bg-transparent border-0 shrink-0"
+              >
+                <AimOutlined />
+              </button>
+            </Tooltip>
           </div>
         ))}
       </div>

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Alert, Card, Row, Col } from 'antd'
 import {
   CarOutlined,
@@ -51,6 +52,7 @@ function StatCard({ icon, label, value, subtitle, color, bgColor }: StatCardProp
 
 export default function DashboardPage() {
   const intl = useIntl()
+  const [focusedVehicleCode, setFocusedVehicleCode] = useState<string | null>(null)
   const { data: groups, isLoading: groupsLoading } = useGroups()
   const groupCode = groups?.[0]?.Code ?? ''
   const { data: vehicles, isLoading: vehiclesLoading, error } = useVehicles(groupCode)
@@ -140,14 +142,18 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex-1 min-h-0 px-4 pb-4">
-              <FleetMap vehicles={vehicles ?? []} />
+              <FleetMap
+                vehicles={vehicles ?? []}
+                focusedVehicleCode={focusedVehicleCode}
+                onFocusHandled={() => setFocusedVehicleCode(null)}
+              />
             </div>
           </Card>
         </Col>
         <Col xs={24} lg={8} className="h-full">
           <div className="flex flex-col gap-4 h-full overflow-auto">
             <RecentAlerts vehicles={vehicles ?? []} />
-            <VehicleList vehicles={vehicles ?? []} />
+            <VehicleList vehicles={vehicles ?? []} onLocate={setFocusedVehicleCode} />
           </div>
         </Col>
       </Row>

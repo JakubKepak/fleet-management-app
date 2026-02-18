@@ -48,6 +48,7 @@
   "vehicles.active": "Aktivní",
   "vehicles.idle": "Stojí",
   "vehicles.offline": "Offline",
+  "vehicles.locate": "Zobrazit na mapě",
 
   "fleet.title": "Kniha jízd",
   "fleet.description": "Seznam vozidel, jízdy a historie pozic.",

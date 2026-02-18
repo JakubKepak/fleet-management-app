@@ -101,7 +101,7 @@ function MapLegend() {
   const intl = useIntl()
 
   return (
-    <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-md px-3 py-2.5 text-xs">
+    <div className="absolute top-4 right-4 bg-white rounded-lg shadow-md px-3 py-2.5 text-xs">
       <div className="font-medium text-gray-700 mb-1.5">
         {intl.formatMessage({ id: 'map.legend' })}
       </div>
@@ -155,12 +155,43 @@ function MapPlaceholder({ vehicles }: { vehicles: Vehicle[] }) {
   )
 }
 
-interface FleetMapProps {
-  vehicles: Vehicle[]
+function FocusVehicle({ vehicle, onHandled }: { vehicle: Vehicle | undefined; onHandled: () => void }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!map || !vehicle) return
+
+    const lat = parseFloat(vehicle.LastPosition.Latitude)
+    const lng = parseFloat(vehicle.LastPosition.Longitude)
+    if (isNaN(lat) || isNaN(lng)) return
+
+    map.panTo({ lat, lng })
+    map.setZoom(14)
+    onHandled()
+  }, [map, vehicle, onHandled])
+
+  return null
 }
 
-export default function FleetMap({ vehicles }: FleetMapProps) {
+interface FleetMapProps {
+  vehicles: Vehicle[]
+  focusedVehicleCode?: string | null
+  onFocusHandled?: () => void
+}
+
+export default function FleetMap({ vehicles, focusedVehicleCode, onFocusHandled }: FleetMapProps) {
   const [selectedCode, setSelectedCode] = useState<string | null>(null)
+
+  const focusedVehicle = focusedVehicleCode
+    ? vehicles.find(v => v.Code === focusedVehicleCode)
+    : undefined
+
+  // Auto-select the focused vehicle's info window
+  useEffect(() => {
+    if (focusedVehicleCode) {
+      setSelectedCode(focusedVehicleCode)
+    }
+  }, [focusedVehicleCode])
 
   if (!MAPS_API_KEY) {
     return <MapPlaceholder vehicles={vehicles} />
@@ -179,6 +210,7 @@ export default function FleetMap({ vehicles }: FleetMapProps) {
           zoomControl
         >
           <FitBounds vehicles={vehicles} />
+          <FocusVehicle vehicle={focusedVehicle} onHandled={onFocusHandled ?? (() => {})} />
           {vehicles.map(v => (
             <VehicleMarker
               key={v.Code}

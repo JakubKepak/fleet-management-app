@@ -48,6 +48,7 @@
   "vehicles.active": "Active",
   "vehicles.idle": "Idle",
   "vehicles.offline": "Offline",
+  "vehicles.locate": "Show on map",
 
   "fleet.title": "Trip Logs",
   "fleet.description": "Vehicle list, trips, and position history.",
