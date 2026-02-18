@@ -37,13 +37,12 @@ function proxyRequest(
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // Extract the full path after /api/ (e.g. /api/v1/vehicles/group/SAGU → v1/vehicles/group/SAGU)
-    const urlPath = (req.url ?? '').split('?')[0].replace(/^\/api\/?/, '')
-    const target = `${UPSTREAM}/api/${urlPath}`
+    // The original path comes via the rewrite — extract it from the URL
+    const urlPath = (req.url ?? '').split('?')[0]
+    const target = `${UPSTREAM}${urlPath}`
 
-    // Forward real query params, exclude Vercel's internal ...path param
+    // Forward query params, exclude Vercel internal ones
     const url = new URL(req.url ?? '/', `https://${req.headers.host}`)
-    url.searchParams.delete('...path')
     const qs = url.searchParams.toString()
     const fullTarget = qs ? `${target}?${qs}` : target
 
