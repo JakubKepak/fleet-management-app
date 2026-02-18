@@ -24,14 +24,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const data = await response.text()
 
-    // Strip WWW-Authenticate to prevent browser auth dialog
+    // Strip headers that cause issues (auth dialog, stale caching)
+    const skipHeaders = new Set(['www-authenticate', 'etag', 'cache-control', 'expires', 'pragma'])
     const responseHeaders = Object.fromEntries(
       [...response.headers.entries()].filter(
-        ([key]) => key.toLowerCase() !== 'www-authenticate'
+        ([key]) => !skipHeaders.has(key.toLowerCase())
       )
     )
 
     res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Cache-Control', 'no-store')
     for (const [key, value] of Object.entries(responseHeaders)) {
       res.setHeader(key, value)
     }
