@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import https from 'https'
 
-const API_BASE = 'https://a1.gpsguard.eu/api/v1'
+const UPSTREAM = 'https://a1.gpsguard.eu'
 
 function proxyRequest(
   url: string,
@@ -37,12 +37,11 @@ function proxyRequest(
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // Extract path after /api/v1/ from the actual URL, ignoring Vercel's query params
-    const urlPath = (req.url ?? '').split('?')[0]
-    const apiPath = urlPath.replace(/^\/api\/v1\/?/, '')
-    const target = apiPath ? `${API_BASE}/${apiPath}` : `${API_BASE}`
+    // Extract the full path after /api/ (e.g. /api/v1/vehicles/group/SAGU → v1/vehicles/group/SAGU)
+    const urlPath = (req.url ?? '').split('?')[0].replace(/^\/api\/?/, '')
+    const target = `${UPSTREAM}/api/${urlPath}`
 
-    // Forward only real query params (exclude Vercel's internal ...path param)
+    // Forward real query params, exclude Vercel's internal ...path param
     const url = new URL(req.url ?? '/', `https://${req.headers.host}`)
     url.searchParams.delete('...path')
     const qs = url.searchParams.toString()
