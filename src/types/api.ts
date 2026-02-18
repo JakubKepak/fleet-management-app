@@ -35,22 +35,25 @@ export interface PositionHistory {
 }
 
 export interface Trip {
+  Id: number
   AverageSpeed: number
   MaxSpeed: number
+  TripType: boolean
   StartTime: string
   FinishTime: string
-  StartLatitude: number
-  StartLongitude: number
-  FinishLatitude: number
-  FinishLongitude: number
+  StartPosition: { Latitude: string; Longitude: string }
+  FinishPosition: { Latitude: string; Longitude: string }
   StartAddress: string
   FinishAddress: string
-  Distance: number
+  TripLength: string
+  TripWaitingTime: string
+  TotalDistance: number
   DriverName: string
-  FuelConsumption: number
-  TripCost: number
-  Currency: string
-  WaitingTime: number
+  DriverChipCode: string
+  IsFinished: boolean
+  Odometer: number
+  FuelConsumed: { Value: number; VolumeUnit: number }
+  TripCost: { Value: number; Currency: number }
 }
 
 export interface SensorReading {
