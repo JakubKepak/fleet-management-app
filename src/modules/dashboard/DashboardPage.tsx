@@ -7,6 +7,7 @@ import {
 } from '@ant-design/icons'
 import { useGroups, useVehicles } from '@/api/hooks'
 import DashboardSkeleton from '@/modules/dashboard/DashboardSkeleton'
+import FleetMap from '@/modules/dashboard/FleetMap'
 import type { Vehicle } from '@/types/api'
 
 function getFleetStats(vehicles: Vehicle[]) {
@@ -109,6 +110,16 @@ export default function DashboardPage() {
           />
         </Col>
       </Row>
+
+      <div className="mt-6">
+        <div className="mb-3">
+          <h2 className="text-base font-semibold text-gray-900 m-0">Live Map</h2>
+          <p className="text-gray-400 text-xs mt-0.5 mb-0">Real-time vehicle positions</p>
+        </div>
+        <Card styles={{ body: { padding: 0, height: 400 } }}>
+          <FleetMap vehicles={vehicles ?? []} />
+        </Card>
+      </div>
     </div>
   )
 }

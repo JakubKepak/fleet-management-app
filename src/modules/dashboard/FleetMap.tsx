@@ -1,0 +1,182 @@
+import { useState, useEffect } from 'react'
+import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps'
+import { EnvironmentOutlined } from '@ant-design/icons'
+import type { Vehicle } from '@/types/api'
+
+const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string
+
+function getMarkerColor(vehicle: Vehicle): string {
+  if (vehicle.Speed > 0) return '#22c55e'
+  if (vehicle.IsActive) return '#f59e0b'
+  return '#ef4444'
+}
+
+function getStatusLabel(vehicle: Vehicle): string {
+  if (vehicle.Speed > 0) return `${vehicle.Speed} km/h`
+  if (vehicle.IsActive) return 'Idle'
+  return 'Offline'
+}
+
+interface VehicleMarkerProps {
+  vehicle: Vehicle
+  isSelected: boolean
+  onSelect: (code: string | null) => void
+}
+
+function VehicleMarker({ vehicle, isSelected, onSelect }: VehicleMarkerProps) {
+  const lat = parseFloat(vehicle.LastPosition.Latitude)
+  const lng = parseFloat(vehicle.LastPosition.Longitude)
+
+  if (isNaN(lat) || isNaN(lng)) return null
+
+  const color = getMarkerColor(vehicle)
+
+  return (
+    <>
+      <AdvancedMarker
+        position={{ lat, lng }}
+        title={vehicle.Name}
+        onClick={() => onSelect(vehicle.Code)}
+      >
+        <div
+          className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white shadow-md text-white text-xs font-bold"
+          style={{ backgroundColor: color }}
+        >
+          <EnvironmentOutlined />
+        </div>
+      </AdvancedMarker>
+
+      {isSelected && (
+        <InfoWindow
+          position={{ lat, lng }}
+          onCloseClick={() => onSelect(null)}
+          pixelOffset={[0, -36]}
+        >
+          <div className="min-w-[160px]">
+            <div className="font-semibold text-sm">{vehicle.Name}</div>
+            <div className="text-xs text-gray-500 mt-0.5">{vehicle.SPZ}</div>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+              <span className="text-xs">{getStatusLabel(vehicle)}</span>
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              {vehicle.BranchName}
+            </div>
+          </div>
+        </InfoWindow>
+      )}
+    </>
+  )
+}
+
+function FitBounds({ vehicles }: { vehicles: Vehicle[] }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!map || vehicles.length === 0) return
+
+    const bounds = new google.maps.LatLngBounds()
+    let hasValid = false
+
+    vehicles.forEach(v => {
+      const lat = parseFloat(v.LastPosition.Latitude)
+      const lng = parseFloat(v.LastPosition.Longitude)
+      if (!isNaN(lat) && !isNaN(lng)) {
+        bounds.extend({ lat, lng })
+        hasValid = true
+      }
+    })
+
+    if (hasValid) {
+      map.fitBounds(bounds, 50)
+    }
+  }, [map, vehicles])
+
+  return null
+}
+
+function MapLegend() {
+  return (
+    <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-md px-3 py-2.5 text-xs">
+      <div className="font-medium text-gray-700 mb-1.5">Status Legend</div>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+          <span className="text-gray-600">Active</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+          <span className="text-gray-600">Idle/Parked</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+          <span className="text-gray-600">Offline</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MapPlaceholder({ vehicles }: { vehicles: Vehicle[] }) {
+  const active = vehicles.filter(v => v.Speed > 0).length
+  const idle = vehicles.filter(v => v.Speed === 0 && v.IsActive).length
+
+  return (
+    <div className="h-full bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg flex flex-col items-center justify-center text-center p-6">
+      <EnvironmentOutlined className="text-4xl text-blue-300 mb-3" />
+      <div className="text-gray-600 font-medium">Live Map</div>
+      <div className="text-gray-400 text-sm mt-1">
+        Add VITE_GOOGLE_MAPS_API_KEY to .env to enable the map
+      </div>
+      <div className="flex gap-4 mt-4 text-xs">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+          <span className="text-gray-500">{active} active</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+          <span className="text-gray-500">{idle} idle</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface FleetMapProps {
+  vehicles: Vehicle[]
+}
+
+export default function FleetMap({ vehicles }: FleetMapProps) {
+  const [selectedCode, setSelectedCode] = useState<string | null>(null)
+
+  if (!MAPS_API_KEY) {
+    return <MapPlaceholder vehicles={vehicles} />
+  }
+
+  return (
+    <div className="h-full relative">
+      <APIProvider apiKey={MAPS_API_KEY}>
+        <Map
+          defaultCenter={{ lat: 50.08, lng: 14.43 }}
+          defaultZoom={6}
+          mapId="fleet-map"
+          style={{ width: '100%', height: '100%', borderRadius: '8px' }}
+          gestureHandling="greedy"
+          disableDefaultUI
+          zoomControl
+        >
+          <FitBounds vehicles={vehicles} />
+          {vehicles.map(v => (
+            <VehicleMarker
+              key={v.Code}
+              vehicle={v}
+              isSelected={selectedCode === v.Code}
+              onSelect={setSelectedCode}
+            />
+          ))}
+        </Map>
+      </APIProvider>
+      <MapLegend />
+    </div>
+  )
+}
