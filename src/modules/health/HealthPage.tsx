@@ -1,7 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { Alert, Button, Card, DatePicker, Row, Col, Progress } from 'antd'
+import { Alert, Card, DatePicker, Row, Col, Progress } from 'antd'
 import {
-  BulbOutlined,
   HeartOutlined,
   CarOutlined,
   WarningOutlined,
@@ -19,6 +18,7 @@ import {
   computeFleetHealthSummary,
 } from '@/modules/health/computeVehicleHealth'
 import VehicleHealthTable from '@/modules/health/VehicleHealthTable'
+import AIInsightsButton from '@/components/AIInsightsButton'
 import InsightCards from '@/components/InsightCards'
 
 const { RangePicker } = DatePicker
@@ -158,13 +158,7 @@ export default function HealthPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <Button
-            icon={<BulbOutlined />}
-            onClick={() => setShowInsights(v => !v)}
-            type={showInsights ? 'primary' : 'default'}
-          >
-            {intl.formatMessage({ id: 'insights.button' })}
-          </Button>
+          <AIInsightsButton active={showInsights} onClick={() => setShowInsights(v => !v)} />
           <RangePicker
             value={dateRange}
             onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}

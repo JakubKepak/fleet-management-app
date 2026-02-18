@@ -1,7 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { Alert, Button, Card, DatePicker, Row, Col } from 'antd'
+import { Alert, Card, DatePicker, Row, Col } from 'antd'
 import {
-  BulbOutlined,
   ThunderboltOutlined,
   DollarOutlined,
   DashboardOutlined,
@@ -18,6 +17,7 @@ import {
 } from '@/modules/fuel/computeFuelStats'
 import FuelCharts from '@/modules/fuel/FuelCharts'
 import VehicleFuelTable from '@/modules/fuel/VehicleFuelTable'
+import AIInsightsButton from '@/components/AIInsightsButton'
 import InsightCards from '@/components/InsightCards'
 
 const { RangePicker } = DatePicker
@@ -134,13 +134,7 @@ export default function FuelPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <Button
-            icon={<BulbOutlined />}
-            onClick={() => setShowInsights(v => !v)}
-            type={showInsights ? 'primary' : 'default'}
-          >
-            {intl.formatMessage({ id: 'insights.button' })}
-          </Button>
+          <AIInsightsButton active={showInsights} onClick={() => setShowInsights(v => !v)} />
           <RangePicker
             value={dateRange}
             onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}

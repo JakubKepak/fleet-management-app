@@ -1,7 +1,6 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { Alert, Button, Card, DatePicker, Select, Row, Col } from 'antd'
+import { Alert, Card, DatePicker, Select, Row, Col } from 'antd'
 import {
-  BulbOutlined,
   CarOutlined,
   UserOutlined,
   DashboardOutlined,
@@ -12,6 +11,7 @@ import { useIntl } from 'react-intl'
 import { useSearchParams } from 'react-router-dom'
 import { useGroups, useVehicles, useAllVehicleTrips } from '@/api/hooks'
 import TripTable from '@/modules/fleet/TripTable'
+import AIInsightsButton from '@/components/AIInsightsButton'
 import InsightCards from '@/components/InsightCards'
 
 const { RangePicker } = DatePicker
@@ -139,13 +139,7 @@ export default function FleetPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <Button
-            icon={<BulbOutlined />}
-            onClick={() => setShowInsights(v => !v)}
-            type={showInsights ? 'primary' : 'default'}
-          >
-            {intl.formatMessage({ id: 'insights.button' })}
-          </Button>
+          <AIInsightsButton active={showInsights} onClick={() => setShowInsights(v => !v)} />
           <Select
             value={selectedVehicle}
             onChange={setSelectedVehicle}

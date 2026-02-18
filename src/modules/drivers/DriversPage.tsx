@@ -1,6 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { Alert, Button, DatePicker } from 'antd'
-import { BulbOutlined } from '@ant-design/icons'
+import { Alert, DatePicker } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useIntl } from 'react-intl'
 import { useSearchParams } from 'react-router-dom'
@@ -9,6 +8,7 @@ import { computeAllDriverStats } from '@/modules/drivers/computeDriverStats'
 import TopDrivers from '@/modules/drivers/TopDrivers'
 import DriverRankingTable from '@/modules/drivers/DriverRankingTable'
 import ScoringMethodology from '@/modules/drivers/ScoringMethodology'
+import AIInsightsButton from '@/components/AIInsightsButton'
 import InsightCards from '@/components/InsightCards'
 
 const { RangePicker } = DatePicker
@@ -93,13 +93,7 @@ export default function DriversPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <Button
-            icon={<BulbOutlined />}
-            onClick={() => setShowInsights(v => !v)}
-            type={showInsights ? 'primary' : 'default'}
-          >
-            {intl.formatMessage({ id: 'insights.button' })}
-          </Button>
+          <AIInsightsButton active={showInsights} onClick={() => setShowInsights(v => !v)} />
           <RangePicker
             value={dateRange}
             onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}

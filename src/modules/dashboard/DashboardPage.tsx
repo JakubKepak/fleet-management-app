@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
-import { Alert, Button, Card, Row, Col } from 'antd'
+import { Alert, Card, Row, Col } from 'antd'
 import {
-  BulbOutlined,
   CarOutlined,
   PauseCircleOutlined,
   ToolOutlined,
@@ -13,6 +12,7 @@ import DashboardSkeleton from '@/modules/dashboard/DashboardSkeleton'
 import FleetMap from '@/modules/dashboard/FleetMap'
 import RecentAlerts from '@/modules/dashboard/RecentAlerts'
 import VehicleList from '@/modules/dashboard/VehicleList'
+import AIInsightsButton from '@/components/AIInsightsButton'
 import InsightCards from '@/components/InsightCards'
 import type { Vehicle } from '@/types/api'
 
@@ -93,13 +93,7 @@ export default function DashboardPage() {
             {intl.formatMessage({ id: 'dashboard.subtitle' })}
           </p>
         </div>
-        <Button
-          icon={<BulbOutlined />}
-          onClick={() => setShowInsights(v => !v)}
-          type={showInsights ? 'primary' : 'default'}
-        >
-          {intl.formatMessage({ id: 'insights.button' })}
-        </Button>
+        <AIInsightsButton active={showInsights} onClick={() => setShowInsights(v => !v)} />
       </div>
 
       <Row gutter={[16, 16]} className="shrink-0">
