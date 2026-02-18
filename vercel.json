@@ -5,6 +5,10 @@
       "destination": "/api/proxy"
     },
     {
+      "source": "/api/gemini",
+      "destination": "/api/gemini"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

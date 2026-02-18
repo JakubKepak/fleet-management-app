@@ -11,6 +11,7 @@ import { useIntl } from 'react-intl'
 import { useSearchParams } from 'react-router-dom'
 import { useGroups, useVehicles, useAllVehicleTrips } from '@/api/hooks'
 import TripTable from '@/modules/fleet/TripTable'
+import InsightCards from '@/components/InsightCards'
 
 const { RangePicker } = DatePicker
 
@@ -203,6 +204,22 @@ export default function FleetPage() {
           />
         </Col>
       </Row>
+
+      <InsightCards module="fleet" data={useMemo(() => ({
+        trips: trips.length,
+        totalDistance: totalDistance,
+        uniqueVehicles,
+        uniqueDrivers,
+        vehicles: (vehicles ?? []).map(v => {
+          const vTrips = trips.filter(t => t.vehicleName === v.Name)
+          return {
+            name: v.Name,
+            trips: vTrips.length,
+            totalDistance: vTrips.reduce((s, t) => s + n(t.TotalDistance), 0),
+            avgSpeed: vTrips.length > 0 ? vTrips.reduce((s, t) => s + n(t.AverageSpeed), 0) / vTrips.length : 0,
+          }
+        }),
+      }), [trips, totalDistance, uniqueVehicles, uniqueDrivers, vehicles])} />
 
       <TripTable trips={trips} loading={isLoading} />
     </div>

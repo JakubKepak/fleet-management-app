@@ -17,6 +17,7 @@ import {
 } from '@/modules/fuel/computeFuelStats'
 import FuelCharts from '@/modules/fuel/FuelCharts'
 import VehicleFuelTable from '@/modules/fuel/VehicleFuelTable'
+import InsightCards from '@/components/InsightCards'
 
 const { RangePicker } = DatePicker
 
@@ -191,6 +192,18 @@ export default function FuelPage() {
           />
         </Col>
       </Row>
+
+      <InsightCards module="fuel" data={useMemo(() => ({
+        summary: { ...summary },
+        vehicles: vehicleRows.map(v => ({
+          name: v.vehicleName,
+          fuel: v.fuel,
+          cost: v.cost,
+          distance: v.distance,
+          per100km: v.per100km,
+          trips: v.trips,
+        })),
+      }), [summary, vehicleRows])} />
 
       <FuelCharts dailyFuel={dailyFuel} vehicleRows={vehicleRows} loading={isLoading} />
 

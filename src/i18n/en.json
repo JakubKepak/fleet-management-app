@@ -144,5 +144,8 @@
   "health.colOdometer": "Odometer",
   "health.colTrips": "Trips",
   "health.colEfficiency": "Efficiency",
-  "health.colSpeeding": "Speeding"
+  "health.colSpeeding": "Speeding",
+
+  "insights.title": "AI Insights",
+  "insights.error": "AI insights temporarily unavailable"
 }

@@ -18,3 +18,9 @@ export const vehicleKeys = {
     ['vehicles', code, 'eco-driving', { from, to }] as const,
   engineRelay: (code: string) => ['vehicles', code, 'engine-relay'] as const,
 }
+
+export const insightKeys = {
+  all: ['insights'] as const,
+  byModule: (module: string, dataHash: string) =>
+    ['insights', module, dataHash] as const,
+}

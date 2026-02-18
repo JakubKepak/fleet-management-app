@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Alert, Card, Row, Col } from 'antd'
 import {
   CarOutlined,
@@ -12,6 +12,7 @@ import DashboardSkeleton from '@/modules/dashboard/DashboardSkeleton'
 import FleetMap from '@/modules/dashboard/FleetMap'
 import RecentAlerts from '@/modules/dashboard/RecentAlerts'
 import VehicleList from '@/modules/dashboard/VehicleList'
+import InsightCards from '@/components/InsightCards'
 import type { Vehicle } from '@/types/api'
 
 function getFleetStats(vehicles: Vehicle[]) {
@@ -72,6 +73,12 @@ export default function DashboardPage() {
   }
 
   const stats = getFleetStats(vehicles ?? [])
+  const insightData = useMemo(() => ({
+    active: stats.active,
+    idle: stats.idle,
+    inactive: stats.inactive,
+    total: stats.total,
+  }), [stats.active, stats.idle, stats.inactive, stats.total])
 
   return (
     <div className="flex flex-col h-[calc(100vh-3rem)]">
@@ -126,6 +133,10 @@ export default function DashboardPage() {
           />
         </Col>
       </Row>
+
+      <div className="mt-6 shrink-0">
+        <InsightCards module="dashboard" data={insightData} />
+      </div>
 
       <Row gutter={[16, 16]} className="mt-6 flex-1 min-h-0">
         <Col xs={24} lg={16} className="h-full">

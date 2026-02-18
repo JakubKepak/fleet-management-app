@@ -8,6 +8,7 @@ import { computeAllDriverStats } from '@/modules/drivers/computeDriverStats'
 import TopDrivers from '@/modules/drivers/TopDrivers'
 import DriverRankingTable from '@/modules/drivers/DriverRankingTable'
 import ScoringMethodology from '@/modules/drivers/ScoringMethodology'
+import InsightCards from '@/components/InsightCards'
 
 const { RangePicker } = DatePicker
 
@@ -109,6 +110,18 @@ export default function DriversPage() {
       </div>
 
       <TopDrivers drivers={driverStats} loading={isLoading} />
+
+      <InsightCards module="drivers" data={useMemo(() => ({
+        drivers: driverStats.map(d => ({
+          name: d.name,
+          score: d.score,
+          trips: d.totalTrips,
+          speedingEvents: d.speedingEvents,
+          idleMinutes: d.idleMinutes,
+          fuelPerKm: d.fuelPerKm,
+          totalDistance: d.totalDistance,
+        })),
+      }), [driverStats])} />
 
       <div>
         <h2 className="text-base font-semibold text-gray-900 m-0 mb-3">

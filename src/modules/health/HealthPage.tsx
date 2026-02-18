@@ -18,6 +18,7 @@ import {
   computeFleetHealthSummary,
 } from '@/modules/health/computeVehicleHealth'
 import VehicleHealthTable from '@/modules/health/VehicleHealthTable'
+import InsightCards from '@/components/InsightCards'
 
 const { RangePicker } = DatePicker
 
@@ -215,6 +216,19 @@ export default function HealthPage() {
           />
         </Col>
       </Row>
+
+      <InsightCards module="health" data={useMemo(() => ({
+        summary: { ...summary },
+        vehicles: healthData.map(v => ({
+          name: v.vehicleName,
+          score: v.healthScore,
+          status: v.status,
+          odometer: v.odometer,
+          trips: v.totalTrips,
+          fuelEfficiency: v.fuelEfficiency,
+          speedingEvents: v.speedingEvents,
+        })),
+      }), [summary, healthData])} />
 
       <Card styles={{ body: { padding: '20px' } }}>
         <h3 className="text-sm font-semibold text-gray-900 m-0 mb-4">

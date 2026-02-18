@@ -144,5 +144,8 @@
   "health.colOdometer": "Nájezd",
   "health.colTrips": "Jízdy",
   "health.colEfficiency": "Spotřeba",
-  "health.colSpeeding": "Překročení"
+  "health.colSpeeding": "Překročení",
+
+  "insights.title": "AI Doporučení",
+  "insights.error": "AI doporučení dočasně nedostupná"
 }
