@@ -72,8 +72,8 @@ export default function DashboardPage() {
   const stats = getFleetStats(vehicles ?? [])
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="flex flex-col h-[calc(100vh-3rem)]">
+      <div className="mb-6 shrink-0">
         <h1 className="text-2xl font-bold text-gray-900 m-0">
           {intl.formatMessage({ id: 'dashboard.title' })}
         </h1>
@@ -82,7 +82,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <Row gutter={[16, 16]}>
+      <Row gutter={[16, 16]} className="shrink-0">
         <Col xs={12} sm={12} lg={6}>
           <StatCard
             icon={<CarOutlined />}
@@ -125,22 +125,27 @@ export default function DashboardPage() {
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} className="mt-6">
-        <Col xs={24} lg={16}>
-          <div className="mb-3">
-            <h2 className="text-base font-semibold text-gray-900 m-0">
-              {intl.formatMessage({ id: 'dashboard.liveMap' })}
-            </h2>
-            <p className="text-gray-400 text-xs mt-0.5 mb-0">
-              {intl.formatMessage({ id: 'dashboard.liveMapSubtitle' })}
-            </p>
-          </div>
-          <Card styles={{ body: { padding: 0, height: 400 } }}>
-            <FleetMap vehicles={vehicles ?? []} />
+      <Row gutter={[16, 16]} className="mt-6 flex-1 min-h-0">
+        <Col xs={24} lg={16} className="h-full">
+          <Card
+            className="h-full"
+            styles={{ body: { padding: 0, height: '100%', display: 'flex', flexDirection: 'column' } }}
+          >
+            <div className="px-4 pt-4 pb-2 shrink-0">
+              <h2 className="text-base font-semibold text-gray-900 m-0">
+                {intl.formatMessage({ id: 'dashboard.liveMap' })}
+              </h2>
+              <p className="text-gray-400 text-xs mt-0.5 mb-0">
+                {intl.formatMessage({ id: 'dashboard.liveMapSubtitle' })}
+              </p>
+            </div>
+            <div className="flex-1 min-h-0 px-4 pb-4">
+              <FleetMap vehicles={vehicles ?? []} />
+            </div>
           </Card>
         </Col>
-        <Col xs={24} lg={8}>
-          <div className="flex flex-col gap-4">
+        <Col xs={24} lg={8} className="h-full">
+          <div className="flex flex-col gap-4 h-full overflow-auto">
             <RecentAlerts vehicles={vehicles ?? []} />
             <VehicleList vehicles={vehicles ?? []} />
           </div>
