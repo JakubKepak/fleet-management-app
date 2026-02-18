@@ -1,11 +1,14 @@
 import { Typography } from 'antd'
+import { useIntl } from 'react-intl'
 
 export default function HealthPage() {
+  const intl = useIntl()
+
   return (
     <div>
-      <Typography.Title level={3}>Vehicle Health</Typography.Title>
+      <Typography.Title level={3}>{intl.formatMessage({ id: 'health.title' })}</Typography.Title>
       <Typography.Text type="secondary">
-        Sensor monitoring and maintenance alerts will go here.
+        {intl.formatMessage({ id: 'health.description' })}
       </Typography.Text>
     </div>
   )

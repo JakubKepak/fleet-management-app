@@ -1,11 +1,14 @@
 import { Typography } from 'antd'
+import { useIntl } from 'react-intl'
 
 export default function FuelPage() {
+  const intl = useIntl()
+
   return (
     <div>
-      <Typography.Title level={3}>Fuel & Costs</Typography.Title>
+      <Typography.Title level={3}>{intl.formatMessage({ id: 'fuel.title' })}</Typography.Title>
       <Typography.Text type="secondary">
-        Fuel consumption analytics and cost tracking will go here.
+        {intl.formatMessage({ id: 'fuel.description' })}
       </Typography.Text>
     </div>
   )

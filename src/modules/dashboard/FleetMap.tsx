@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps'
 import { EnvironmentOutlined } from '@ant-design/icons'
+import { useIntl } from 'react-intl'
 import type { Vehicle } from '@/types/api'
 
 const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string
@@ -11,12 +12,6 @@ function getMarkerColor(vehicle: Vehicle): string {
   return '#ef4444'
 }
 
-function getStatusLabel(vehicle: Vehicle): string {
-  if (vehicle.Speed > 0) return `${vehicle.Speed} km/h`
-  if (vehicle.IsActive) return 'Idle'
-  return 'Offline'
-}
-
 interface VehicleMarkerProps {
   vehicle: Vehicle
   isSelected: boolean
@@ -24,12 +19,19 @@ interface VehicleMarkerProps {
 }
 
 function VehicleMarker({ vehicle, isSelected, onSelect }: VehicleMarkerProps) {
+  const intl = useIntl()
   const lat = parseFloat(vehicle.LastPosition.Latitude)
   const lng = parseFloat(vehicle.LastPosition.Longitude)
 
   if (isNaN(lat) || isNaN(lng)) return null
 
   const color = getMarkerColor(vehicle)
+
+  function getStatusLabel(): string {
+    if (vehicle.Speed > 0) return `${vehicle.Speed} km/h`
+    if (vehicle.IsActive) return intl.formatMessage({ id: 'vehicles.idle' })
+    return intl.formatMessage({ id: 'vehicles.offline' })
+  }
 
   return (
     <>
@@ -57,7 +59,7 @@ function VehicleMarker({ vehicle, isSelected, onSelect }: VehicleMarkerProps) {
             <div className="text-xs text-gray-500 mt-0.5">{vehicle.SPZ}</div>
             <div className="flex items-center gap-1.5 mt-1.5">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-              <span className="text-xs">{getStatusLabel(vehicle)}</span>
+              <span className="text-xs">{getStatusLabel()}</span>
             </div>
             <div className="text-xs text-gray-400 mt-1">
               {vehicle.BranchName}
@@ -96,21 +98,25 @@ function FitBounds({ vehicles }: { vehicles: Vehicle[] }) {
 }
 
 function MapLegend() {
+  const intl = useIntl()
+
   return (
     <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-md px-3 py-2.5 text-xs">
-      <div className="font-medium text-gray-700 mb-1.5">Status Legend</div>
+      <div className="font-medium text-gray-700 mb-1.5">
+        {intl.formatMessage({ id: 'map.legend' })}
+      </div>
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-          <span className="text-gray-600">Active</span>
+          <span className="text-gray-600">{intl.formatMessage({ id: 'map.active' })}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-          <span className="text-gray-600">Idle/Parked</span>
+          <span className="text-gray-600">{intl.formatMessage({ id: 'map.idleParked' })}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-          <span className="text-gray-600">Offline</span>
+          <span className="text-gray-600">{intl.formatMessage({ id: 'map.offline' })}</span>
         </div>
       </div>
     </div>
@@ -118,24 +124,31 @@ function MapLegend() {
 }
 
 function MapPlaceholder({ vehicles }: { vehicles: Vehicle[] }) {
+  const intl = useIntl()
   const active = vehicles.filter(v => v.Speed > 0).length
   const idle = vehicles.filter(v => v.Speed === 0 && v.IsActive).length
 
   return (
     <div className="h-full bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg flex flex-col items-center justify-center text-center p-6">
       <EnvironmentOutlined className="text-4xl text-blue-300 mb-3" />
-      <div className="text-gray-600 font-medium">Live Map</div>
+      <div className="text-gray-600 font-medium">
+        {intl.formatMessage({ id: 'map.placeholder' })}
+      </div>
       <div className="text-gray-400 text-sm mt-1">
-        Add VITE_GOOGLE_MAPS_API_KEY to .env to enable the map
+        {intl.formatMessage({ id: 'map.placeholderHint' })}
       </div>
       <div className="flex gap-4 mt-4 text-xs">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-          <span className="text-gray-500">{active} active</span>
+          <span className="text-gray-500">
+            {intl.formatMessage({ id: 'map.activeCount' }, { count: active })}
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-          <span className="text-gray-500">{idle} idle</span>
+          <span className="text-gray-500">
+            {intl.formatMessage({ id: 'map.idleCount' }, { count: idle })}
+          </span>
         </div>
       </div>
     </div>

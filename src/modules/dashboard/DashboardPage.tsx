@@ -5,6 +5,7 @@ import {
   ToolOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
+import { useIntl } from 'react-intl'
 import { useGroups, useVehicles } from '@/api/hooks'
 import DashboardSkeleton from '@/modules/dashboard/DashboardSkeleton'
 import FleetMap from '@/modules/dashboard/FleetMap'
@@ -49,6 +50,7 @@ function StatCard({ icon, label, value, subtitle, color, bgColor }: StatCardProp
 }
 
 export default function DashboardPage() {
+  const intl = useIntl()
   const { data: groups, isLoading: groupsLoading } = useGroups()
   const groupCode = groups?.[0]?.Code ?? ''
   const { data: vehicles, isLoading: vehiclesLoading, error } = useVehicles(groupCode)
@@ -58,7 +60,13 @@ export default function DashboardPage() {
   }
 
   if (error) {
-    return <Alert type="error" message="Failed to load fleet data" description={String(error)} />
+    return (
+      <Alert
+        type="error"
+        message={intl.formatMessage({ id: 'dashboard.loadError' })}
+        description={String(error)}
+      />
+    )
   }
 
   const stats = getFleetStats(vehicles ?? [])
@@ -66,17 +74,21 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 m-0">Fleet Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-1 mb-0">Real-time vehicle tracking and fleet overview</p>
+        <h1 className="text-2xl font-bold text-gray-900 m-0">
+          {intl.formatMessage({ id: 'dashboard.title' })}
+        </h1>
+        <p className="text-gray-500 text-sm mt-1 mb-0">
+          {intl.formatMessage({ id: 'dashboard.subtitle' })}
+        </p>
       </div>
 
       <Row gutter={[16, 16]}>
         <Col xs={12} sm={12} lg={6}>
           <StatCard
             icon={<CarOutlined />}
-            label="Active Vehicles"
+            label={intl.formatMessage({ id: 'dashboard.activeVehicles' })}
             value={stats.active}
-            subtitle="Moving now"
+            subtitle={intl.formatMessage({ id: 'dashboard.activeSubtitle' })}
             color="#22c55e"
             bgColor="#f0fdf4"
           />
@@ -84,9 +96,9 @@ export default function DashboardPage() {
         <Col xs={12} sm={12} lg={6}>
           <StatCard
             icon={<PauseCircleOutlined />}
-            label="Idle Vehicles"
+            label={intl.formatMessage({ id: 'dashboard.idleVehicles' })}
             value={stats.idle}
-            subtitle="Parked"
+            subtitle={intl.formatMessage({ id: 'dashboard.idleSubtitle' })}
             color="#f59e0b"
             bgColor="#fffbeb"
           />
@@ -94,9 +106,9 @@ export default function DashboardPage() {
         <Col xs={12} sm={12} lg={6}>
           <StatCard
             icon={<ToolOutlined />}
-            label="Maintenance"
+            label={intl.formatMessage({ id: 'dashboard.maintenance' })}
             value={stats.inactive}
-            subtitle="Inactive / service"
+            subtitle={intl.formatMessage({ id: 'dashboard.maintenanceSubtitle' })}
             color="#ef4444"
             bgColor="#fef2f2"
           />
@@ -104,9 +116,9 @@ export default function DashboardPage() {
         <Col xs={12} sm={12} lg={6}>
           <StatCard
             icon={<TeamOutlined />}
-            label="Total Fleet"
+            label={intl.formatMessage({ id: 'dashboard.totalFleet' })}
             value={stats.total}
-            subtitle="All vehicles"
+            subtitle={intl.formatMessage({ id: 'dashboard.totalSubtitle' })}
             color="#3b82f6"
             bgColor="#eff6ff"
           />
@@ -116,8 +128,12 @@ export default function DashboardPage() {
       <Row gutter={[16, 16]} className="mt-6">
         <Col xs={24} lg={16}>
           <div className="mb-3">
-            <h2 className="text-base font-semibold text-gray-900 m-0">Live Map</h2>
-            <p className="text-gray-400 text-xs mt-0.5 mb-0">Real-time vehicle positions</p>
+            <h2 className="text-base font-semibold text-gray-900 m-0">
+              {intl.formatMessage({ id: 'dashboard.liveMap' })}
+            </h2>
+            <p className="text-gray-400 text-xs mt-0.5 mb-0">
+              {intl.formatMessage({ id: 'dashboard.liveMapSubtitle' })}
+            </p>
           </div>
           <Card styles={{ body: { padding: 0, height: 400 } }}>
             <FleetMap vehicles={vehicles ?? []} />

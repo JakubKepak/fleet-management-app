@@ -9,30 +9,32 @@ import {
   ToolOutlined,
   GlobalOutlined,
 } from '@ant-design/icons'
+import { useIntl } from 'react-intl'
 import { useLocale } from '@/i18n/LocaleContext'
 import { useGroups, useVehicles } from '@/api/hooks'
 
 const { Sider, Content } = Layout
-
-const menuItems = [
-  { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
-  { key: '/drivers', icon: <UserOutlined />, label: 'Driver Scorecard' },
-  { key: '/fuel', icon: <BarChartOutlined />, label: 'Fuel Analytics' },
-  { key: '/fleet', icon: <CarOutlined />, label: 'Trip Logs' },
-  { key: '/health', icon: <ToolOutlined />, label: 'Vehicle Health' },
-]
 
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const { locale, changeLocale } = useLocale()
+  const intl = useIntl()
 
   const { data: groups } = useGroups()
   const groupCode = groups?.[0]?.Code ?? ''
   const { data: vehicles } = useVehicles(groupCode)
   const activeCount = vehicles?.filter(v => v.Speed > 0).length ?? 0
   const totalCount = vehicles?.length ?? 0
+
+  const menuItems = [
+    { key: '/', icon: <DashboardOutlined />, label: intl.formatMessage({ id: 'nav.dashboard' }) },
+    { key: '/drivers', icon: <UserOutlined />, label: intl.formatMessage({ id: 'nav.drivers' }) },
+    { key: '/fuel', icon: <BarChartOutlined />, label: intl.formatMessage({ id: 'nav.fuel' }) },
+    { key: '/fleet', icon: <CarOutlined />, label: intl.formatMessage({ id: 'nav.fleet' }) },
+    { key: '/health', icon: <ToolOutlined />, label: intl.formatMessage({ id: 'nav.health' }) },
+  ]
 
   return (
     <Layout className="min-h-screen" style={{ flexDirection: 'row' }}>
@@ -53,7 +55,9 @@ export default function AppLayout() {
             {!collapsed && (
               <div className="overflow-hidden">
                 <div className="text-white font-semibold text-sm leading-tight">GPS Dozor</div>
-                <div className="text-blue-300/60 text-xs leading-tight">Fleet Management</div>
+                <div className="text-blue-300/60 text-xs leading-tight">
+                  {intl.formatMessage({ id: 'app.subtitle' })}
+                </div>
               </div>
             )}
           </div>
@@ -72,11 +76,14 @@ export default function AppLayout() {
             {!collapsed ? (
               <div className="rounded-lg bg-white/5 p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-blue-300/80 text-xs font-medium">Fleet Status</span>
+                  <span className="text-blue-300/80 text-xs font-medium">
+                    {intl.formatMessage({ id: 'sidebar.fleetStatus' })}
+                  </span>
                   <Badge status="processing" />
                 </div>
                 <div className="text-white text-sm">
-                  Active vehicles: <span className="font-semibold text-green-400">{activeCount}</span>
+                  {intl.formatMessage({ id: 'sidebar.activeVehicles' })}{' '}
+                  <span className="font-semibold text-green-400">{activeCount}</span>
                   <span className="text-white/40">/{totalCount}</span>
                 </div>
               </div>
@@ -109,7 +116,7 @@ export default function AppLayout() {
               onClick={() => setCollapsed(!collapsed)}
               className="w-full mt-2 py-1.5 text-xs text-white/50 hover:text-white/80 transition-colors cursor-pointer bg-transparent border-0"
             >
-              {collapsed ? '→' : '← Collapse'}
+              {collapsed ? '→' : intl.formatMessage({ id: 'sidebar.collapse' })}
             </button>
           </div>
         </div>

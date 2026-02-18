@@ -1,11 +1,14 @@
 import { Typography } from 'antd'
+import { useIntl } from 'react-intl'
 
 export default function DriversPage() {
+  const intl = useIntl()
+
   return (
     <div>
-      <Typography.Title level={3}>Drivers</Typography.Title>
+      <Typography.Title level={3}>{intl.formatMessage({ id: 'drivers.title' })}</Typography.Title>
       <Typography.Text type="secondary">
-        Driver scorecards and eco-driving analytics will go here.
+        {intl.formatMessage({ id: 'drivers.description' })}
       </Typography.Text>
     </div>
   )

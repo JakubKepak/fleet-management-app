@@ -1,12 +1,7 @@
 import { Card, Tag } from 'antd'
 import { CarOutlined, DashboardOutlined } from '@ant-design/icons'
+import { useIntl } from 'react-intl'
 import type { Vehicle } from '@/types/api'
-
-function getStatusTag(vehicle: Vehicle) {
-  if (vehicle.Speed > 0) return <Tag color="green">Active</Tag>
-  if (vehicle.IsActive) return <Tag color="orange">Idle</Tag>
-  return <Tag color="red">Offline</Tag>
-}
 
 function getStatusDotColor(vehicle: Vehicle): string {
   if (vehicle.Speed > 0) return '#22c55e'
@@ -19,9 +14,19 @@ interface VehicleListProps {
 }
 
 export default function VehicleList({ vehicles }: VehicleListProps) {
+  const intl = useIntl()
+
+  function getStatusTag(vehicle: Vehicle) {
+    if (vehicle.Speed > 0) return <Tag color="green">{intl.formatMessage({ id: 'vehicles.active' })}</Tag>
+    if (vehicle.IsActive) return <Tag color="orange">{intl.formatMessage({ id: 'vehicles.idle' })}</Tag>
+    return <Tag color="red">{intl.formatMessage({ id: 'vehicles.offline' })}</Tag>
+  }
+
   return (
     <Card styles={{ body: { padding: '16px' } }}>
-      <h3 className="text-sm font-semibold text-gray-900 m-0 mb-3">All Vehicles</h3>
+      <h3 className="text-sm font-semibold text-gray-900 m-0 mb-3">
+        {intl.formatMessage({ id: 'vehicles.title' })}
+      </h3>
       <div className="flex flex-col">
         {vehicles.map(v => (
           <div

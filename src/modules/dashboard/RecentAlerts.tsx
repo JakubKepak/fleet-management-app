@@ -1,11 +1,13 @@
 import { Card } from 'antd'
 import { WarningOutlined } from '@ant-design/icons'
+import { useIntl } from 'react-intl'
 import type { Vehicle } from '@/types/api'
 
 interface VehicleAlert {
   vehicleName: string
-  message: string
-  time: string
+  messageId: string
+  messageValues?: Record<string, string | number>
+  timestamp: string
   severity: 'high' | 'medium' | 'low'
 }
 
@@ -18,21 +20,21 @@ const severityColors: Record<string, string> = {
 function generateAlerts(vehicles: Vehicle[]): VehicleAlert[] {
   const alerts: VehicleAlert[] = []
 
-  // TODO: as nice to have create a settings page where user can set alerts thresholds and types (e.g. geofence, maintenance due, etc.)
   for (const v of vehicles) {
     if (v.Speed > 120) {
       alerts.push({
         vehicleName: v.Name,
-        message: `Speeding detected: ${v.Speed} km/h`,
-        time: formatTimeSince(v.LastPositionTimestamp),
+        messageId: 'alerts.speeding',
+        messageValues: { speed: v.Speed },
+        timestamp: v.LastPositionTimestamp,
         severity: 'high',
       })
     }
     if (!v.IsActive) {
       alerts.push({
         vehicleName: v.Name,
-        message: 'Vehicle offline — check connection',
-        time: formatTimeSince(v.LastPositionTimestamp),
+        messageId: 'alerts.offline',
+        timestamp: v.LastPositionTimestamp,
         severity: 'medium',
       })
     }
@@ -41,8 +43,9 @@ function generateAlerts(vehicles: Vehicle[]): VehicleAlert[] {
       if (hours > 2) {
         alerts.push({
           vehicleName: v.Name,
-          message: `Idle for ${Math.round(hours)}+ hours`,
-          time: formatTimeSince(v.LastPositionTimestamp),
+          messageId: 'alerts.idle',
+          messageValues: { hours: Math.round(hours) },
+          timestamp: v.LastPositionTimestamp,
           severity: 'low',
         })
       }
@@ -56,12 +59,16 @@ function hoursSince(timestamp: string): number {
   return (Date.now() - new Date(timestamp).getTime()) / (1000 * 60 * 60)
 }
 
-function formatTimeSince(timestamp: string): string {
-  const mins = Math.floor((Date.now() - new Date(timestamp).getTime()) / (1000 * 60))
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
+function useFormatTimeSince() {
+  const intl = useIntl()
+
+  return (timestamp: string): string => {
+    const mins = Math.floor((Date.now() - new Date(timestamp).getTime()) / (1000 * 60))
+    if (mins < 60) return intl.formatMessage({ id: 'alerts.minutesAgo' }, { mins })
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return intl.formatMessage({ id: 'alerts.hoursAgo' }, { hours })
+    return intl.formatMessage({ id: 'alerts.daysAgo' }, { days: Math.floor(hours / 24) })
+  }
 }
 
 interface RecentAlertsProps {
@@ -69,14 +76,18 @@ interface RecentAlertsProps {
 }
 
 export default function RecentAlerts({ vehicles }: RecentAlertsProps) {
+  const intl = useIntl()
+  const formatTimeSince = useFormatTimeSince()
   const alerts = generateAlerts(vehicles)
 
   if (alerts.length === 0) {
     return (
       <Card styles={{ body: { padding: '16px' } }}>
-        <h3 className="text-sm font-semibold text-gray-900 m-0 mb-3">Recent Alerts</h3>
+        <h3 className="text-sm font-semibold text-gray-900 m-0 mb-3">
+          {intl.formatMessage({ id: 'alerts.title' })}
+        </h3>
         <div className="text-center py-4 text-gray-400 text-sm">
-          No active alerts
+          {intl.formatMessage({ id: 'alerts.empty' })}
         </div>
       </Card>
     )
@@ -84,7 +95,9 @@ export default function RecentAlerts({ vehicles }: RecentAlertsProps) {
 
   return (
     <Card styles={{ body: { padding: '16px' } }}>
-      <h3 className="text-sm font-semibold text-gray-900 m-0 mb-3">Recent Alerts</h3>
+      <h3 className="text-sm font-semibold text-gray-900 m-0 mb-3">
+        {intl.formatMessage({ id: 'alerts.title' })}
+      </h3>
       <div className="flex flex-col gap-2">
         {alerts.map((alert, i) => (
           <div
@@ -98,8 +111,10 @@ export default function RecentAlerts({ vehicles }: RecentAlertsProps) {
             />
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium text-gray-900 truncate">{alert.vehicleName}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{alert.message}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{alert.time}</div>
+              <div className="text-xs text-gray-500 mt-0.5">
+                {intl.formatMessage({ id: alert.messageId }, alert.messageValues)}
+              </div>
+              <div className="text-xs text-gray-400 mt-0.5">{formatTimeSince(alert.timestamp)}</div>
             </div>
           </div>
         ))}
