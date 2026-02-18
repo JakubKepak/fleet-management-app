@@ -9,4 +9,13 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  server: {
+    proxy: {
+      '/api/v1': {
+        target: 'https://a1.gpsguard.eu',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
 })

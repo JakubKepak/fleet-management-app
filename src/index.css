@@ -1,1 +1,27 @@
 @import "tailwindcss";
+
+/* Sidebar menu overrides */
+.ant-layout-sider .ant-menu-dark {
+  background: transparent !important;
+}
+
+.ant-layout-sider .ant-menu-dark .ant-menu-item-selected {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-radius: 8px;
+  margin-inline: 8px;
+}
+
+.ant-layout-sider .ant-menu-dark .ant-menu-item {
+  border-radius: 8px;
+  margin-inline: 8px;
+  margin-block: 2px;
+}
+
+/* Sidebar locale select overrides */
+.ant-layout-sider .ant-select .ant-select-selector {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.ant-layout-sider .ant-select .ant-select-arrow {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
