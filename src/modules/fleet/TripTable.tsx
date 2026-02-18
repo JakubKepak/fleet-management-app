@@ -191,7 +191,7 @@ export default function TripTable({ trips, loading }: TripTableProps) {
       dataSource={dataSource}
       loading={loading}
       pagination={{
-        pageSize: 20,
+        defaultPageSize: 20,
         showSizeChanger: true,
         pageSizeOptions: ['10', '20', '50'],
         showTotal: (total, range) =>
