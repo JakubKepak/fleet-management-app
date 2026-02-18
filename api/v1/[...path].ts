@@ -17,27 +17,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       method: req.method ?? 'GET',
       headers: {
         Authorization: auth,
-        'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
       body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined,
     })
 
     const data = await response.text()
 
-    // Strip headers that cause issues (auth dialog, stale caching)
-    const skipHeaders = new Set(['www-authenticate', 'etag', 'cache-control', 'expires', 'pragma'])
-    const responseHeaders = Object.fromEntries(
-      [...response.headers.entries()].filter(
-        ([key]) => !skipHeaders.has(key.toLowerCase())
-      )
-    )
-
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Cache-Control', 'no-store')
-    for (const [key, value] of Object.entries(responseHeaders)) {
-      res.setHeader(key, value)
-    }
-
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
     res.status(response.status).send(data)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
