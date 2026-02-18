@@ -265,7 +265,7 @@ export default function HealthPage() {
         <Progress
           percent={summary.totalVehicles > 0 ? Math.round((summary.goodHealth / summary.totalVehicles) * 100) : 0}
           strokeColor="#22c55e"
-          trailColor="#fef2f2"
+          railColor="#fef2f2"
           showInfo={false}
         />
         <div className="text-xs text-gray-400 mt-1">
