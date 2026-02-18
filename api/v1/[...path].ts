@@ -1,55 +1,44 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node'
+
 const API_BASE = 'https://a1.gpsguard.eu/api/v1'
 
-export const config = { runtime: 'edge' }
-
-export default async function handler(req: Request) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const url = new URL(req.url)
-    const apiPath = url.pathname.replace(/^\/api\/v1\/?/, '')
-    const target = `${API_BASE}/${apiPath}${url.search}`
+    const { path } = req.query
+    const apiPath = Array.isArray(path) ? path.join('/') : (path ?? '')
+    const qs = req.url?.includes('?') ? '?' + req.url.split('?')[1] : ''
+    const target = `${API_BASE}/${apiPath}${qs}`
 
     const username = process.env.API_USERNAME ?? ''
     const password = process.env.API_PASSWORD ?? ''
-    const auth = 'Basic ' + btoa(`${username}:${password}`)
+    const auth = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')
 
-    const headers: Record<string, string> = {
-      Authorization: auth,
-      'Content-Type': 'application/json',
-    }
-
-    const init: RequestInit = {
-      method: req.method,
-      headers,
-    }
-
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
-      init.body = await req.text()
-    }
-
-    const response = await fetch(target, init)
-
-    // Copy response headers but strip WWW-Authenticate to prevent browser auth dialog
-    const responseHeaders = new Headers()
-    response.headers.forEach((value, key) => {
-      if (key.toLowerCase() !== 'www-authenticate') {
-        responseHeaders.set(key, value)
-      }
+    const response = await fetch(target, {
+      method: req.method ?? 'GET',
+      headers: {
+        Authorization: auth,
+        'Content-Type': 'application/json',
+      },
+      body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined,
     })
-    responseHeaders.set('Access-Control-Allow-Origin', '*')
 
-    // Read body as array buffer to avoid streaming issues
-    const body = await response.arrayBuffer()
+    const data = await response.text()
 
-    return new Response(body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders,
-    })
+    // Strip WWW-Authenticate to prevent browser auth dialog
+    const responseHeaders = Object.fromEntries(
+      [...response.headers.entries()].filter(
+        ([key]) => key.toLowerCase() !== 'www-authenticate'
+      )
+    )
+
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    for (const [key, value] of Object.entries(responseHeaders)) {
+      res.setHeader(key, value)
+    }
+
+    res.status(response.status).send(data)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
-    return new Response(JSON.stringify({ error: message }), {
-      status: 502,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    res.status(502).json({ error: message })
   }
 }
