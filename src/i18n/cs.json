@@ -1,0 +1,18 @@
+{
+  "app.title": "GPS Dozor - Správa vozového parku",
+  "nav.dashboard": "Přehled",
+  "nav.fleet": "Vozový park",
+  "nav.drivers": "Řidiči",
+  "nav.fuel": "Palivo a náklady",
+  "nav.health": "Stav vozidel",
+  "dashboard.title": "Přehled",
+  "dashboard.description": "Přehled vozového parku a živá mapa.",
+  "fleet.title": "Vozový park",
+  "fleet.description": "Seznam vozidel, jízdy a historie pozic.",
+  "drivers.title": "Řidiči",
+  "drivers.description": "Hodnocení řidičů a analýza stylu jízdy.",
+  "fuel.title": "Palivo a náklady",
+  "fuel.description": "Analýza spotřeby paliva a sledování nákladů.",
+  "health.title": "Stav vozidel",
+  "health.description": "Monitoring senzorů a upozornění na údržbu."
+}

@@ -1,0 +1,18 @@
+{
+  "app.title": "GPS Dozor - Fleet Management",
+  "nav.dashboard": "Dashboard",
+  "nav.fleet": "Fleet",
+  "nav.drivers": "Drivers",
+  "nav.fuel": "Fuel & Costs",
+  "nav.health": "Vehicle Health",
+  "dashboard.title": "Dashboard",
+  "dashboard.description": "Fleet overview and live map will go here.",
+  "fleet.title": "Fleet",
+  "fleet.description": "Vehicle list, trips, and position history will go here.",
+  "drivers.title": "Drivers",
+  "drivers.description": "Driver scorecards and eco-driving analytics will go here.",
+  "fuel.title": "Fuel & Costs",
+  "fuel.description": "Fuel consumption analytics and cost tracking will go here.",
+  "health.title": "Vehicle Health",
+  "health.description": "Sensor monitoring and maintenance alerts will go here."
+}
