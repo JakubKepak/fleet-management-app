@@ -40,8 +40,10 @@ src/
 - Use Tailwind only for custom spacing, layout utilities, and gaps antd doesn't cover
 - All API calls go through `src/api/client.ts` using `apiGet`, `apiPost`, `apiPut`
 - Use TanStack Query hooks for all server data fetching
+- All query keys must use factories from `src/api/queryKeys.ts` — never use inline string arrays
 - Keep module pages in their respective `modules/<name>/` folder
 - TypeScript strict mode is enabled — no `any` types
+- Use Skeleton loading states, never Spin/spinners — each page should have a colocated `*Skeleton.tsx`
 - All user-facing strings must use react-intl `<FormattedMessage>` or `useIntl().formatMessage()`
 - Translation keys go in `src/i18n/cs.json` (primary) and `src/i18n/en.json`
 - Use `useLocale()` from `@/i18n/LocaleContext` to access/change locale

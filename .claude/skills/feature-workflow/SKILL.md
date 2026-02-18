@@ -49,8 +49,9 @@ For each block:
 1. **Announce** which block you're starting
 2. **Implement** the block fully
 3. **Verify** the build passes (`npm run build`)
-4. **Present** the result to the user — explain what was built and how to test it
-5. **STOP and wait** for the user to verify and approve before moving to the next block
+4. **Commit the block** — run pre-commit security scan, then commit with a descriptive message following the `feat:` / `fix:` / `chore:` convention
+5. **Present** the result to the user — explain what was built and how to test it
+6. **STOP and wait** for the user to verify and approve before moving to the next block
 
 ### Anti-patterns
 

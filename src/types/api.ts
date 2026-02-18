@@ -3,14 +3,27 @@ export interface Group {
   Name: string
 }
 
+export interface VehiclePosition {
+  Latitude: string
+  Longitude: string
+}
+
 export interface Vehicle {
   Code: string
+  GroupCode: string
+  BranchId: number
+  BranchName: string
   Name: string
-  Speed: number
-  Latitude: number
-  Longitude: number
+  SPZ: string
   BatteryPercentage: number
+  Speed: number
+  LastPosition: VehiclePosition
+  DeviceImei: string
+  IsActive: boolean
+  LastPositionTimestamp: string
+  IsEcoDrivingEnabled: boolean
   Odometer: number
+  IsInvoiced: boolean
   RefuelingCards: string[]
 }
 
