@@ -63,8 +63,35 @@ export default function FleetPage() {
   const intl = useIntl()
   const [searchParams, setSearchParams] = useSearchParams()
   const dateRange = parseDateRange(searchParams)
-  const [selectedVehicle, setSelectedVehicle] = useState<string>('all')
   const [showInsights, setShowInsights] = useState(false)
+
+  const { data: groups, isLoading: groupsLoading } = useGroups()
+  const groupCode = groups?.[0]?.Code ?? ''
+  const { data: vehicles, isLoading: vehiclesLoading } = useVehicles(groupCode)
+
+  // Parse selected vehicle codes from URL; default to first vehicle
+  const selectedCodes = useMemo(() => {
+    const param = searchParams.get('vehicles')
+    if (param) {
+      const codes = param.split(',').filter(Boolean)
+      if (codes.length > 0) return codes
+    }
+    // Default to first vehicle when no param or empty
+    const first = vehicles?.[0]?.Code
+    return first ? [first] : []
+  }, [searchParams, vehicles])
+
+  const setSelectedCodes = useCallback((codes: string[]) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      if (codes.length > 0) {
+        next.set('vehicles', codes.join(','))
+      } else {
+        next.delete('vehicles')
+      }
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
 
   const setDateRange = useCallback((range: [Dayjs, Dayjs]) => {
     setSearchParams(prev => {
@@ -77,44 +104,43 @@ export default function FleetPage() {
 
   useEffect(() => {
     if (!searchParams.has('from') || !searchParams.has('to')) {
-      setSearchParams({
-        from: dateRange[0].format(DATE_FORMAT),
-        to: dateRange[1].format(DATE_FORMAT),
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev)
+        next.set('from', dateRange[0].format(DATE_FORMAT))
+        next.set('to', dateRange[1].format(DATE_FORMAT))
+        return next
       }, { replace: true })
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [pickerDates, setPickerDates] = useState<[Dayjs | null, Dayjs | null]>([null, null])
 
-  const { data: groups, isLoading: groupsLoading } = useGroups()
-  const groupCode = groups?.[0]?.Code ?? ''
-  const { data: vehicles, isLoading: vehiclesLoading } = useVehicles(groupCode)
+  // Only fetch trips for selected vehicles (not the full fleet)
+  const selectedVehicles = useMemo(
+    () => (vehicles ?? []).filter(v => selectedCodes.includes(v.Code)),
+    [vehicles, selectedCodes],
+  )
 
   const from = dateRange[0].format('YYYY-MM-DDTHH:mm:ss')
   const to = dateRange[1].format('YYYY-MM-DDTHH:mm:ss')
 
-  const { data: allTrips, isLoading: tripsLoading, error } = useAllVehicleTrips(
-    vehicles ?? [],
+  const { data: trips, isLoading: tripsLoading, error } = useAllVehicleTrips(
+    selectedVehicles,
     from,
     to,
   )
 
-  const trips = useMemo(() => {
-    const data = allTrips ?? []
-    if (selectedVehicle === 'all') return data
-    return data.filter(t => t.vehicleName === selectedVehicle)
-  }, [allTrips, selectedVehicle])
-
   const isLoading = groupsLoading || vehiclesLoading || tripsLoading
 
-  const totalDistance = useMemo(() => trips.reduce((sum, t) => sum + n(t.TotalDistance), 0), [trips])
+  const tripList = trips ?? []
+  const totalDistance = useMemo(() => tripList.reduce((sum, t) => sum + n(t.TotalDistance), 0), [tripList])
   const uniqueDrivers = useMemo(
-    () => new Set(trips.map(t => (t.DriverName ?? '').trim()).filter(Boolean)).size,
-    [trips],
+    () => new Set(tripList.map(t => (t.DriverName ?? '').trim()).filter(Boolean)).size,
+    [tripList],
   )
   const uniqueVehicles = useMemo(
-    () => new Set(trips.map(t => t.vehicleName)).size,
-    [trips],
+    () => new Set(tripList.map(t => t.vehicleCode)).size,
+    [tripList],
   )
 
   if (error) {
@@ -141,13 +167,13 @@ export default function FleetPage() {
         <div className="flex items-center gap-3 flex-wrap">
           <AIInsightsButton active={showInsights} onClick={() => setShowInsights(v => !v)} />
           <Select
-            value={selectedVehicle}
-            onChange={setSelectedVehicle}
-            style={{ minWidth: 180 }}
-            options={[
-              { value: 'all', label: intl.formatMessage({ id: 'fleet.allVehicles' }) },
-              ...(vehicles ?? []).map(v => ({ value: v.Name, label: `${v.Name} (${v.SPZ})` })),
-            ]}
+            mode="multiple"
+            value={selectedCodes}
+            onChange={setSelectedCodes}
+            style={{ minWidth: 220, maxWidth: 400 }}
+            maxTagCount="responsive"
+            placeholder={intl.formatMessage({ id: 'fleet.selectVehicles' })}
+            options={(vehicles ?? []).map(v => ({ value: v.Code, label: `${v.Name} (${v.SPZ})` }))}
           />
           <RangePicker
             value={dateRange}
@@ -174,7 +200,7 @@ export default function FleetPage() {
           <StatCard
             icon={<NodeIndexOutlined />}
             label={intl.formatMessage({ id: 'fleet.statTrips' })}
-            value={String(trips.length)}
+            value={String(tripList.length)}
             color="#3b82f6"
             bgColor="#eff6ff"
           />
@@ -209,12 +235,12 @@ export default function FleetPage() {
       </Row>
 
       <InsightCards module="fleet" visible={showInsights} data={useMemo(() => ({
-        trips: trips.length,
+        trips: tripList.length,
         totalDistance: totalDistance,
         uniqueVehicles,
         uniqueDrivers,
-        vehicles: (vehicles ?? []).map(v => {
-          const vTrips = trips.filter(t => t.vehicleName === v.Name)
+        vehicles: selectedVehicles.map(v => {
+          const vTrips = tripList.filter(t => t.vehicleCode === v.Code)
           return {
             name: v.Name,
             trips: vTrips.length,
@@ -222,9 +248,9 @@ export default function FleetPage() {
             avgSpeed: vTrips.length > 0 ? vTrips.reduce((s, t) => s + n(t.AverageSpeed), 0) / vTrips.length : 0,
           }
         }),
-      }), [trips, totalDistance, uniqueVehicles, uniqueDrivers, vehicles])} />
+      }), [tripList, totalDistance, uniqueVehicles, uniqueDrivers, selectedVehicles])} />
 
-      <TripTable trips={trips} loading={isLoading} />
+      <TripTable trips={tripList} loading={isLoading} />
     </div>
   )
 }

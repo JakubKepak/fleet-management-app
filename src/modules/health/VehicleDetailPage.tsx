@@ -15,6 +15,7 @@ import { useIntl } from 'react-intl'
 import { useParams, Link } from 'react-router-dom'
 import { useVehicle, useVehicleSensors } from '@/api/hooks'
 import type { SensorItem } from '@/types/api'
+import VehicleTripEconomics from '@/modules/health/VehicleTripEconomics'
 
 const { RangePicker } = DatePicker
 
@@ -246,6 +247,10 @@ export default function VehicleDetailPage() {
           </>
         )}
       </Row>
+
+      {vehicle && (
+        <VehicleTripEconomics vehicle={vehicle} from={from} to={to} />
+      )}
 
       <div className="flex items-center justify-between flex-wrap gap-4">
         <h2 className="text-base font-semibold text-gray-900 m-0">

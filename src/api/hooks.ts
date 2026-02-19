@@ -59,11 +59,11 @@ export function useAllVehicleTrips(vehicles: Vehicle[], from: string, to: string
       enabled: !!from && !!to,
     })),
     combine: (results) => {
-      const allTrips: (Trip & { vehicleName: string; vehicleSPZ: string })[] = []
+      const allTrips: (Trip & { vehicleCode: string; vehicleName: string; vehicleSPZ: string })[] = []
       results.forEach((result, i) => {
         if (result.data) {
           result.data.forEach(trip => {
-            allTrips.push({ ...trip, vehicleName: vehicles[i].Name, vehicleSPZ: vehicles[i].SPZ })
+            allTrips.push({ ...trip, vehicleCode: vehicles[i].Code, vehicleName: vehicles[i].Name, vehicleSPZ: vehicles[i].SPZ })
           })
         }
       })

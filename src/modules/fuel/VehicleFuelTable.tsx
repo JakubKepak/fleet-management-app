@@ -85,7 +85,7 @@ export default function VehicleFuelTable({ rows, loading }: VehicleFuelTableProp
     },
   ]
 
-  const dataSource = rows.map(r => ({ ...r, key: r.vehicleName }))
+  const dataSource = rows.map(r => ({ ...r, key: r.vehicleSPZ }))
 
   return (
     <div>

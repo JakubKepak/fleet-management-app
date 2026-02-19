@@ -55,7 +55,7 @@ export function computeVehicleFuelRows(trips: TripWithVehicle[]): VehicleFuelRow
   const map = new Map<string, VehicleFuelRow>()
 
   for (const t of trips) {
-    const key = t.vehicleName
+    const key = t.vehicleSPZ
     const existing = map.get(key)
     const fuel = n(t.FuelConsumed?.Value)
     const cost = n(t.TripCost?.Value)
