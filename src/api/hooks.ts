@@ -1,7 +1,7 @@
 import { useQuery, useQueries } from '@tanstack/react-query'
 import { apiGet } from '@/api/client'
 import { groupKeys, vehicleKeys } from '@/api/queryKeys'
-import type { Group, Vehicle, Trip, SensorResponse } from '@/types/api'
+import type { Group, Vehicle, Trip, SensorResponse, PositionHistoryResponse } from '@/types/api'
 
 export function useGroups() {
   return useQuery({
@@ -48,6 +48,25 @@ export function useVehicleSensors(
         `/vehicle/${vehicleCode}/sensors/${sensorTypes.join(',')}?from=${from}&to=${to}`,
       ),
     enabled: !!vehicleCode && sensorTypes.length > 0 && !!from && !!to,
+  })
+}
+
+export function usePositionHistory(
+  vehicleCodes: string[],
+  from: string,
+  to: string,
+  refetchInterval?: number,
+) {
+  return useQuery({
+    queryKey: vehicleKeys.positionHistory(vehicleCodes, from, to),
+    queryFn: async () => {
+      const res = await apiGet<PositionHistoryResponse[]>(
+        `/vehicles/history/${vehicleCodes.join(',')}?from=${from}&to=${to}`,
+      )
+      return res.flatMap(r => r.Positions)
+    },
+    enabled: vehicleCodes.length > 0 && !!from && !!to,
+    refetchInterval,
   })
 }
 

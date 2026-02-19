@@ -4,6 +4,7 @@ import { Layout, Menu, Badge, Select } from 'antd'
 import {
   DashboardOutlined,
   CarOutlined,
+  EnvironmentOutlined,
   ToolOutlined,
   GlobalOutlined,
   RobotOutlined,
@@ -30,9 +31,12 @@ export default function AppLayout() {
   const activeCount = vehicles?.filter(v => v.Speed > 0).length ?? 0
   const totalCount = vehicles?.length ?? 0
 
+  const isMapPage = location.pathname === '/map'
+
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: intl.formatMessage({ id: 'nav.dashboard' }) },
     { key: '/fleet', icon: <CarOutlined />, label: intl.formatMessage({ id: 'nav.fleet' }) },
+    { key: '/map', icon: <EnvironmentOutlined />, label: intl.formatMessage({ id: 'nav.map' }) },
     { key: '/health', icon: <ToolOutlined />, label: intl.formatMessage({ id: 'nav.health' }) },
   ]
 
@@ -123,7 +127,7 @@ export default function AppLayout() {
       </Sider>
 
       <Layout>
-        <Content className="p-6 bg-gray-50 min-h-screen">
+        <Content className={isMapPage ? 'overflow-hidden' : 'p-6 bg-gray-50 min-h-screen'}>
           <Outlet />
         </Content>
       </Layout>

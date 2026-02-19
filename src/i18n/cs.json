@@ -4,6 +4,7 @@
 
   "nav.dashboard": "Přehled",
   "nav.fleet": "Kniha jízd",
+  "nav.map": "Mapa",
   "nav.health": "Ekonomika flotily",
 
   "sidebar.fleetStatus": "Stav flotily",
@@ -138,5 +139,17 @@
   "ai.welcomeSubtitle": "Zeptejte se na stav vozidel, spotřebu paliva, řidiče a další informace o vaší flotile.",
   "ai.suggestStatus": "Jaký je aktuální stav flotily?",
   "ai.suggestMileage": "Která vozidla mají nejvyšší nájezd?",
-  "ai.suggestFuel": "Jak si stojí spotřeba paliva?"
+  "ai.suggestFuel": "Jak si stojí spotřeba paliva?",
+
+  "liveMap.searchPlaceholder": "Hledat vozidlo…",
+  "liveMap.driving": "V jízdě",
+  "liveMap.parked": "Zaparkováno",
+  "liveMap.offline": "Offline",
+  "liveMap.activeTrip": "Aktivní jízda",
+  "liveMap.lastTrip": "Poslední jízda",
+  "liveMap.noTrips": "Žádné jízdy dnes",
+  "liveMap.tripDistance": "Vzdálenost",
+  "liveMap.tripDriver": "Řidič",
+  "liveMap.collapsePanel": "Sbalit",
+  "liveMap.expandPanel": "Rozbalit"
 }

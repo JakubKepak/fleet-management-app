@@ -27,10 +27,18 @@ export interface Vehicle {
   RefuelingCards: string[]
 }
 
-export interface PositionHistory {
-  Latitude: number
-  Longitude: number
-  Timestamp: string
+export interface PositionHistoryResponse {
+  Name: string
+  VehicleCode: string
+  From: string
+  To: string
+  Positions: PositionPoint[]
+}
+
+export interface PositionPoint {
+  Lat: string
+  Lng: string
+  Time: string
   Speed: number
 }
 

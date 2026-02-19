@@ -4,6 +4,7 @@
 
   "nav.dashboard": "Dashboard",
   "nav.fleet": "Trip Logs",
+  "nav.map": "Map",
   "nav.health": "Fleet Economics",
 
   "sidebar.fleetStatus": "Fleet Status",
@@ -138,5 +139,17 @@
   "ai.welcomeSubtitle": "Ask about vehicle status, fuel consumption, drivers, and other fleet information.",
   "ai.suggestStatus": "What is the current fleet status?",
   "ai.suggestMileage": "Which vehicles have the highest mileage?",
-  "ai.suggestFuel": "How is fuel consumption looking?"
+  "ai.suggestFuel": "How is fuel consumption looking?",
+
+  "liveMap.searchPlaceholder": "Search vehicles…",
+  "liveMap.driving": "Driving",
+  "liveMap.parked": "Parked",
+  "liveMap.offline": "Offline",
+  "liveMap.activeTrip": "Active trip",
+  "liveMap.lastTrip": "Last trip",
+  "liveMap.noTrips": "No trips today",
+  "liveMap.tripDistance": "Distance",
+  "liveMap.tripDriver": "Driver",
+  "liveMap.collapsePanel": "Collapse",
+  "liveMap.expandPanel": "Expand"
 }
