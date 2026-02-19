@@ -47,6 +47,7 @@
   "vehicles.active": "Active",
   "vehicles.idle": "Idle",
   "vehicles.offline": "Offline",
+  "vehicles.tripLog": "Trip log",
   "vehicles.locate": "Show on map",
 
   "fleet.title": "Trip Logs",

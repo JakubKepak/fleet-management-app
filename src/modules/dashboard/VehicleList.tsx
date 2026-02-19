@@ -1,5 +1,6 @@
 import { Card, Tag, Tooltip } from 'antd'
-import { CarOutlined, DashboardOutlined, AimOutlined } from '@ant-design/icons'
+import { CarOutlined, DashboardOutlined, AimOutlined, NodeIndexOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 import { useIntl } from 'react-intl'
 import type { Vehicle } from '@/types/api'
 import { getEffectiveSpeed } from '@/utils/vehicle'
@@ -17,6 +18,7 @@ interface VehicleListProps {
 
 export default function VehicleList({ vehicles, onLocate }: VehicleListProps) {
   const intl = useIntl()
+  const navigate = useNavigate()
 
   function getStatusTag(vehicle: Vehicle) {
     if (getEffectiveSpeed(vehicle) > 0) return <Tag color="green">{intl.formatMessage({ id: 'vehicles.active' })}</Tag>
@@ -55,6 +57,14 @@ export default function VehicleList({ vehicles, onLocate }: VehicleListProps) {
               </div>
             </div>
             {getStatusTag(v)}
+            <Tooltip title={intl.formatMessage({ id: 'vehicles.tripLog' })}>
+              <button
+                onClick={() => navigate(`/fleet?vehicles=${v.Code}`)}
+                className="flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer bg-transparent border-0 shrink-0"
+              >
+                <NodeIndexOutlined />
+              </button>
+            </Tooltip>
             <Tooltip title={intl.formatMessage({ id: 'vehicles.locate' })}>
               <button
                 onClick={() => onLocate?.(v.Code)}
