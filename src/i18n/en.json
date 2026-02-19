@@ -5,7 +5,7 @@
   "nav.dashboard": "Dashboard",
   "nav.fleet": "Trip Logs",
   "nav.map": "Map",
-  "nav.health": "Fleet Economics",
+  "nav.health": "Fleet",
 
   "sidebar.fleetStatus": "Fleet Status",
   "sidebar.activeVehicles": "Active vehicles:",
@@ -70,7 +70,7 @@
   "fleet.colFuel": "Fuel",
   "fleet.colCost": "Cost",
   "fleet.pagination": "{from}–{to} of {total} trips",
-  "health.title": "Fleet Economics",
+  "health.title": "Fleet",
   "health.subtitle": "Vehicle overview, costs, and consumption",
   "health.loadError": "Failed to load vehicle data",
   "health.searchPlaceholder": "Search by name, SPZ, or branch…",

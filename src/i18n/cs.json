@@ -5,7 +5,7 @@
   "nav.dashboard": "Přehled",
   "nav.fleet": "Kniha jízd",
   "nav.map": "Mapa",
-  "nav.health": "Ekonomika flotily",
+  "nav.health": "Flotila",
 
   "sidebar.fleetStatus": "Stav flotily",
   "sidebar.activeVehicles": "Aktivní vozidla:",
@@ -70,7 +70,7 @@
   "fleet.colFuel": "Palivo",
   "fleet.colCost": "Náklady",
   "fleet.pagination": "{from}–{to} z {total} jízd",
-  "health.title": "Ekonomika flotily",
+  "health.title": "Flotila",
   "health.subtitle": "Přehled vozidel, nákladů a spotřeby",
   "health.loadError": "Nepodařilo se načíst data o vozidlech",
   "health.searchPlaceholder": "Hledat podle názvu, SPZ nebo pobočky…",
