@@ -130,36 +130,70 @@ function FocusVehicle({ vehicleCode, vehicles }: { vehicleCode: string | null; v
 
 // ── Trip polyline ───────────────────────────────────────────────
 
+function getSpeedColor(speed: number): string {
+  if (speed > 130) return '#ef4444'  // red — speeding
+  if (speed > 90) return '#f59e0b'   // orange — fast
+  return '#22c55e'                    // green — normal
+}
+
 function TripPolyline({ positions }: { positions: PositionPoint[] }) {
   const map = useMap()
-  const polylineRef = useRef<google.maps.Polyline | null>(null)
+  const polylinesRef = useRef<google.maps.Polyline[]>([])
 
   useEffect(() => {
-    if (!map) return
+    // Clean up previous segments
+    polylinesRef.current.forEach(p => p.setMap(null))
+    polylinesRef.current = []
 
-    if (polylineRef.current) {
-      polylineRef.current.setMap(null)
+    if (!map || positions.length < 2) return
+
+    // Group consecutive points by speed color into segments
+    let currentColor = getSpeedColor(positions[0].Speed)
+    let currentPath: google.maps.LatLngLiteral[] = [
+      { lat: Number(positions[0].Lat), lng: Number(positions[0].Lng) },
+    ]
+
+    for (let i = 1; i < positions.length; i++) {
+      const color = getSpeedColor(positions[i].Speed)
+      const point = { lat: Number(positions[i].Lat), lng: Number(positions[i].Lng) }
+
+      if (color !== currentColor) {
+        // Close current segment at this point and start new one
+        currentPath.push(point)
+        polylinesRef.current.push(
+          new google.maps.Polyline({
+            path: currentPath,
+            geodesic: true,
+            strokeColor: currentColor,
+            strokeOpacity: 0.9,
+            strokeWeight: 4,
+            map,
+          }),
+        )
+        currentColor = color
+        currentPath = [point]
+      } else {
+        currentPath.push(point)
+      }
     }
 
-    if (positions.length === 0) {
-      polylineRef.current = null
-      return
+    // Flush last segment
+    if (currentPath.length >= 2) {
+      polylinesRef.current.push(
+        new google.maps.Polyline({
+          path: currentPath,
+          geodesic: true,
+          strokeColor: currentColor,
+          strokeOpacity: 0.9,
+          strokeWeight: 4,
+          map,
+        }),
+      )
     }
-
-    const path = positions.map(p => ({ lat: Number(p.Lat), lng: Number(p.Lng) }))
-
-    polylineRef.current = new google.maps.Polyline({
-      path,
-      geodesic: true,
-      strokeColor: '#3b82f6',
-      strokeOpacity: 0.8,
-      strokeWeight: 4,
-      map,
-    })
 
     return () => {
-      polylineRef.current?.setMap(null)
-      polylineRef.current = null
+      polylinesRef.current.forEach(p => p.setMap(null))
+      polylinesRef.current = []
     }
   }, [map, positions])
 
