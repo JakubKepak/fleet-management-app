@@ -2,9 +2,10 @@ import { Card, Tag, Tooltip } from 'antd'
 import { CarOutlined, DashboardOutlined, AimOutlined } from '@ant-design/icons'
 import { useIntl } from 'react-intl'
 import type { Vehicle } from '@/types/api'
+import { getEffectiveSpeed } from '@/utils/vehicle'
 
 function getStatusDotColor(vehicle: Vehicle): string {
-  if (vehicle.Speed > 0) return '#22c55e'
+  if (getEffectiveSpeed(vehicle) > 0) return '#22c55e'
   if (vehicle.IsActive) return '#f59e0b'
   return '#ef4444'
 }
@@ -18,7 +19,7 @@ export default function VehicleList({ vehicles, onLocate }: VehicleListProps) {
   const intl = useIntl()
 
   function getStatusTag(vehicle: Vehicle) {
-    if (vehicle.Speed > 0) return <Tag color="green">{intl.formatMessage({ id: 'vehicles.active' })}</Tag>
+    if (getEffectiveSpeed(vehicle) > 0) return <Tag color="green">{intl.formatMessage({ id: 'vehicles.active' })}</Tag>
     if (vehicle.IsActive) return <Tag color="orange">{intl.formatMessage({ id: 'vehicles.idle' })}</Tag>
     return <Tag color="red">{intl.formatMessage({ id: 'vehicles.offline' })}</Tag>
   }
@@ -45,10 +46,10 @@ export default function VehicleList({ vehicles, onLocate }: VehicleListProps) {
                   <CarOutlined />
                   {v.SPZ}
                 </span>
-                {v.Speed > 0 && (
+                {getEffectiveSpeed(v) > 0 && (
                   <span className="flex items-center gap-1">
                     <DashboardOutlined />
-                    {v.Speed} km/h
+                    {getEffectiveSpeed(v)} km/h
                   </span>
                 )}
               </div>

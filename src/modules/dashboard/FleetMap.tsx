@@ -3,11 +3,12 @@ import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/re
 import { EnvironmentOutlined } from '@ant-design/icons'
 import { useIntl } from 'react-intl'
 import type { Vehicle } from '@/types/api'
+import { getEffectiveSpeed } from '@/utils/vehicle'
 
 const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string
 
 function getMarkerColor(vehicle: Vehicle): string {
-  if (vehicle.Speed > 0) return '#22c55e'
+  if (getEffectiveSpeed(vehicle) > 0) return '#22c55e'
   if (vehicle.IsActive) return '#f59e0b'
   return '#ef4444'
 }
@@ -28,7 +29,8 @@ function VehicleMarker({ vehicle, isSelected, onSelect }: VehicleMarkerProps) {
   const color = getMarkerColor(vehicle)
 
   function getStatusLabel(): string {
-    if (vehicle.Speed > 0) return `${vehicle.Speed} km/h`
+    const speed = getEffectiveSpeed(vehicle)
+    if (speed > 0) return `${speed} km/h`
     if (vehicle.IsActive) return intl.formatMessage({ id: 'vehicles.idle' })
     return intl.formatMessage({ id: 'vehicles.offline' })
   }
@@ -125,8 +127,8 @@ function MapLegend() {
 
 function MapPlaceholder({ vehicles }: { vehicles: Vehicle[] }) {
   const intl = useIntl()
-  const active = vehicles.filter(v => v.Speed > 0).length
-  const idle = vehicles.filter(v => v.Speed === 0 && v.IsActive).length
+  const active = vehicles.filter(v => getEffectiveSpeed(v) > 0).length
+  const idle = vehicles.filter(v => getEffectiveSpeed(v) === 0 && v.IsActive).length
 
   return (
     <div className="h-full bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg flex flex-col items-center justify-center text-center p-6">

@@ -2,6 +2,7 @@ import { Card } from 'antd'
 import { WarningOutlined } from '@ant-design/icons'
 import { useIntl } from 'react-intl'
 import type { Vehicle } from '@/types/api'
+import { getEffectiveSpeed } from '@/utils/vehicle'
 
 interface VehicleAlert {
   vehicleName: string
@@ -21,11 +22,12 @@ function generateAlerts(vehicles: Vehicle[]): VehicleAlert[] {
   const alerts: VehicleAlert[] = []
 
   for (const v of vehicles) {
-    if (v.Speed > 120) {
+    const speed = getEffectiveSpeed(v)
+    if (speed > 120) {
       alerts.push({
         vehicleName: v.Name,
         messageId: 'alerts.speeding',
-        messageValues: { speed: v.Speed },
+        messageValues: { speed },
         timestamp: v.LastPositionTimestamp,
         severity: 'high',
       })
@@ -38,7 +40,7 @@ function generateAlerts(vehicles: Vehicle[]): VehicleAlert[] {
         severity: 'medium',
       })
     }
-    if (v.Speed === 0 && v.IsActive) {
+    if (speed === 0 && v.IsActive) {
       const hours = hoursSince(v.LastPositionTimestamp)
       if (hours > 2) {
         alerts.push({

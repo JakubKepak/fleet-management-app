@@ -15,10 +15,11 @@ import VehicleList from '@/modules/dashboard/VehicleList'
 import AIInsightsButton from '@/components/AIInsightsButton'
 import InsightCards from '@/components/InsightCards'
 import type { Vehicle } from '@/types/api'
+import { getEffectiveSpeed } from '@/utils/vehicle'
 
 function getFleetStats(vehicles: Vehicle[]) {
-  const active = vehicles.filter(v => v.Speed > 0).length
-  const idle = vehicles.filter(v => v.Speed === 0 && v.IsActive).length
+  const active = vehicles.filter(v => getEffectiveSpeed(v) > 0).length
+  const idle = vehicles.filter(v => getEffectiveSpeed(v) === 0 && v.IsActive).length
   const inactive = vehicles.filter(v => !v.IsActive).length
   return { active, idle, inactive, total: vehicles.length }
 }

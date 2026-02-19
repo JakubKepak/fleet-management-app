@@ -6,13 +6,14 @@ import dayjs from 'dayjs'
 import { useIntl } from 'react-intl'
 import { useGroups, useVehicles, useTrips, usePositionHistory } from '@/api/hooks'
 import type { Vehicle, PositionPoint, Trip } from '@/types/api'
+import { getEffectiveSpeed } from '@/utils/vehicle'
 
 const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string
 
 // ── Marker helpers ──────────────────────────────────────────────
 
 function getMarkerColor(vehicle: Vehicle): string {
-  if (vehicle.Speed > 0) return '#22c55e'
+  if (getEffectiveSpeed(vehicle) > 0) return '#22c55e'
   if (vehicle.IsActive) return '#f59e0b'
   return '#ef4444'
 }
@@ -34,7 +35,8 @@ function VehicleMarker({
   const color = getMarkerColor(vehicle)
 
   function getStatusLabel(): string {
-    if (vehicle.Speed > 0) return `${vehicle.Speed} km/h`
+    const speed = getEffectiveSpeed(vehicle)
+    if (speed > 0) return `${speed} km/h`
     if (vehicle.IsActive) return intl.formatMessage({ id: 'vehicles.idle' })
     return intl.formatMessage({ id: 'vehicles.offline' })
   }
@@ -269,14 +271,14 @@ function VehicleListPanel({
       key: 'driving',
       labelId: 'liveMap.driving',
       color: '#22c55e',
-      vehicles: filtered.filter(v => v.Speed > 0),
+      vehicles: filtered.filter(v => getEffectiveSpeed(v) > 0),
       defaultOpen: true,
     },
     {
       key: 'parked',
       labelId: 'liveMap.parked',
       color: '#f59e0b',
-      vehicles: filtered.filter(v => v.Speed === 0 && v.IsActive),
+      vehicles: filtered.filter(v => getEffectiveSpeed(v) === 0 && v.IsActive),
       defaultOpen: false,
     },
     {
@@ -361,8 +363,8 @@ function VehicleListPanel({
                   <div className="text-sm font-medium text-gray-900 truncate">{v.Name}</div>
                   <div className="text-xs text-gray-400">{v.SPZ}</div>
                 </div>
-                {v.Speed > 0 && (
-                  <span className="text-xs font-medium text-green-600 shrink-0">{v.Speed} km/h</span>
+                {getEffectiveSpeed(v) > 0 && (
+                  <span className="text-xs font-medium text-green-600 shrink-0">{getEffectiveSpeed(v)} km/h</span>
                 )}
               </button>
             ))}
@@ -401,34 +403,6 @@ function TripInfoBar({ trip }: { trip: Trip }) {
         {trip.DriverName?.trim() && (
           <span className="text-gray-400">{trip.DriverName.trim()}</span>
         )}
-      </div>
-    </div>
-  )
-}
-
-// ── Map legend ──────────────────────────────────────────────────
-
-function MapLegend() {
-  const intl = useIntl()
-
-  return (
-    <div className="absolute top-4 right-4 z-10 bg-white rounded-lg shadow-md px-3 py-2.5 text-xs">
-      <div className="font-medium text-gray-700 mb-1.5">
-        {intl.formatMessage({ id: 'map.legend' })}
-      </div>
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-          <span className="text-gray-600">{intl.formatMessage({ id: 'map.active' })}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-          <span className="text-gray-600">{intl.formatMessage({ id: 'map.idleParked' })}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-          <span className="text-gray-600">{intl.formatMessage({ id: 'map.offline' })}</span>
-        </div>
       </div>
     </div>
   )
