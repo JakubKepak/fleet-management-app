@@ -1,140 +1,137 @@
-import { useMemo, useState, useCallback, useEffect } from 'react'
-import { Alert, Card, DatePicker, Row, Col, Progress } from 'antd'
-import {
-  HeartOutlined,
-  CarOutlined,
-  WarningOutlined,
-  DashboardOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined,
-  CloseCircleOutlined,
-} from '@ant-design/icons'
-import dayjs, { type Dayjs } from 'dayjs'
+import { useMemo, useState } from 'react'
+import { Alert, Input, Table, Tag } from 'antd'
+import type { ColumnsType } from 'antd/es/table'
+import { CheckOutlined } from '@ant-design/icons'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import { useIntl } from 'react-intl'
-import { useSearchParams } from 'react-router-dom'
-import { useGroups, useVehicles, useAllVehicleTrips } from '@/api/hooks'
-import {
-  computeVehicleHealth,
-  computeFleetHealthSummary,
-} from '@/modules/health/computeVehicleHealth'
-import VehicleHealthTable from '@/modules/health/VehicleHealthTable'
+import { Link } from 'react-router-dom'
+import { useGroups, useVehicles } from '@/api/hooks'
 import AIInsightsButton from '@/components/AIInsightsButton'
 import InsightCards from '@/components/InsightCards'
+import type { Vehicle } from '@/types/api'
 
-const { RangePicker } = DatePicker
-
-const MAX_RANGE_DAYS = 30
-const DATE_FORMAT = 'YYYY-MM-DD'
-
-function parseDateRange(searchParams: URLSearchParams): [Dayjs, Dayjs] {
-  const fromParam = searchParams.get('from')
-  const toParam = searchParams.get('to')
-  const from = fromParam ? dayjs(fromParam, DATE_FORMAT, true) : null
-  const to = toParam ? dayjs(toParam, DATE_FORMAT, true) : null
-
-  if (from?.isValid() && to?.isValid() && to.diff(from, 'day') <= MAX_RANGE_DAYS) {
-    return [from, to]
-  }
-  return [dayjs().subtract(MAX_RANGE_DAYS, 'day'), dayjs()]
-}
-
-interface StatCardProps {
-  icon: React.ReactNode
-  label: string
-  value: string
-  subtitle?: string
-  color: string
-  bgColor: string
-}
-
-function StatCard({ icon, label, value, subtitle, color, bgColor }: StatCardProps) {
-  return (
-    <Card className="h-full" styles={{ body: { padding: '20px' } }}>
-      <div className="flex items-start gap-3">
-        <div
-          className="flex items-center justify-center w-10 h-10 rounded-lg text-lg shrink-0"
-          style={{ color, backgroundColor: bgColor }}
-        >
-          {icon}
-        </div>
-        <div className="min-w-0">
-          <div className="text-gray-500 text-xs font-medium">{label}</div>
-          <div className="text-2xl font-bold text-gray-900 leading-tight mt-0.5">{value}</div>
-          {subtitle && <div className="text-gray-400 text-xs mt-0.5">{subtitle}</div>}
-        </div>
-      </div>
-    </Card>
-  )
-}
-
-interface StatusBadgeProps {
-  count: number
-  label: string
-  icon: React.ReactNode
-  color: string
-  bgColor: string
-}
-
-function StatusBadge({ count, label, icon, color, bgColor }: StatusBadgeProps) {
-  return (
-    <div className="flex items-center gap-2 px-4 py-3 rounded-lg" style={{ backgroundColor: bgColor }}>
-      <span style={{ color }}>{icon}</span>
-      <span className="text-2xl font-bold" style={{ color }}>{count}</span>
-      <span className="text-sm text-gray-600">{label}</span>
-    </div>
-  )
-}
+dayjs.extend(relativeTime)
 
 export default function HealthPage() {
   const intl = useIntl()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const dateRange = parseDateRange(searchParams)
+  const [search, setSearch] = useState('')
   const [showInsights, setShowInsights] = useState(false)
-
-  const setDateRange = useCallback((range: [Dayjs, Dayjs]) => {
-    setSearchParams({
-      from: range[0].format(DATE_FORMAT),
-      to: range[1].format(DATE_FORMAT),
-    }, { replace: true })
-  }, [setSearchParams])
-
-  useEffect(() => {
-    if (!searchParams.has('from') || !searchParams.has('to')) {
-      setSearchParams({
-        from: dateRange[0].format(DATE_FORMAT),
-        to: dateRange[1].format(DATE_FORMAT),
-      }, { replace: true })
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const [pickerDates, setPickerDates] = useState<[Dayjs | null, Dayjs | null]>([null, null])
 
   const { data: groups, isLoading: groupsLoading } = useGroups()
   const groupCode = groups?.[0]?.Code ?? ''
-  const { data: vehicles, isLoading: vehiclesLoading } = useVehicles(groupCode)
+  const { data: vehicles, isLoading: vehiclesLoading, error } = useVehicles(groupCode)
 
-  const from = dateRange[0].format('YYYY-MM-DDTHH:mm:ss')
-  const to = dateRange[1].format('YYYY-MM-DDTHH:mm:ss')
+  const filteredVehicles = useMemo(() => {
+    const list = vehicles ?? []
+    if (!search.trim()) return list
+    const q = search.toLowerCase()
+    return list.filter(
+      v =>
+        v.Name.toLowerCase().includes(q) ||
+        v.SPZ.toLowerCase().includes(q) ||
+        v.BranchName.toLowerCase().includes(q),
+    )
+  }, [vehicles, search])
 
-  const { data: allTrips, isLoading: tripsLoading, error } = useAllVehicleTrips(
-    vehicles ?? [],
-    from,
-    to,
+  const branches = useMemo(
+    () => [...new Set((vehicles ?? []).map(v => v.BranchName))].map(b => ({ text: b, value: b })),
+    [vehicles],
   )
 
-  const healthData = useMemo(
-    () => computeVehicleHealth(vehicles ?? [], allTrips ?? []),
-    [vehicles, allTrips],
-  )
-  const summary = useMemo(
-    () => computeFleetHealthSummary(healthData),
-    [healthData],
-  )
+  const isLoading = groupsLoading || vehiclesLoading
 
-  const isLoading = groupsLoading || vehiclesLoading || tripsLoading
+  const insightData = useMemo(() => ({
+    vehicles: (vehicles ?? []).map(v => ({
+      name: v.Name,
+      spz: v.SPZ,
+      branch: v.BranchName,
+      odometer: v.Odometer,
+      speed: v.Speed,
+      isActive: v.IsActive,
+      ecoDriving: v.IsEcoDrivingEnabled,
+    })),
+  }), [vehicles])
 
-  const scoreColor = summary.avgHealthScore >= 75 ? '#22c55e'
-    : summary.avgHealthScore >= 50 ? '#f59e0b' : '#ef4444'
+  const columns: ColumnsType<Vehicle & { key: string }> = [
+    {
+      title: intl.formatMessage({ id: 'health.colVehicle' }),
+      key: 'vehicle',
+      width: 180,
+      sorter: (a, b) => a.Name.localeCompare(b.Name),
+      render: (_, record) => (
+        <Link to={`/health/${record.Code}`} className="font-medium text-blue-600 hover:text-blue-800">
+          {record.Name}
+        </Link>
+      ),
+    },
+    {
+      title: intl.formatMessage({ id: 'health.colSPZ' }),
+      dataIndex: 'SPZ',
+      key: 'spz',
+      width: 120,
+    },
+    {
+      title: intl.formatMessage({ id: 'health.colBranch' }),
+      dataIndex: 'BranchName',
+      key: 'branch',
+      width: 180,
+      filters: branches,
+      onFilter: (value, record) => record.BranchName === value,
+    },
+    {
+      title: intl.formatMessage({ id: 'health.colOdometer' }),
+      key: 'odometer',
+      width: 120,
+      sorter: (a, b) => a.Odometer - b.Odometer,
+      render: (_, record) => (
+        <span className="text-sm">{(record.Odometer / 1000).toFixed(0)}k km</span>
+      ),
+    },
+    {
+      title: intl.formatMessage({ id: 'health.colActivity' }),
+      key: 'activity',
+      width: 140,
+      sorter: (a, b) => a.Speed - b.Speed,
+      render: (_, record) => (
+        <div className="text-sm">
+          {record.Speed > 0 ? (
+            <span className="text-green-600 font-medium">{record.Speed} km/h</span>
+          ) : (
+            <span className="text-gray-400">{intl.formatMessage({ id: 'health.parked' })}</span>
+          )}
+          <div className="text-xs text-gray-400">{dayjs(record.LastPositionTimestamp).fromNow()}</div>
+        </div>
+      ),
+    },
+    {
+      title: intl.formatMessage({ id: 'health.colStatus' }),
+      key: 'status',
+      width: 100,
+      filters: [
+        { text: intl.formatMessage({ id: 'health.active' }), value: 'true' },
+        { text: intl.formatMessage({ id: 'health.inactive' }), value: 'false' },
+      ],
+      onFilter: (value, record) => String(record.IsActive) === value,
+      render: (_, record) => (
+        <Tag color={record.IsActive ? 'green' : 'red'} className="m-0">
+          {intl.formatMessage({ id: record.IsActive ? 'health.active' : 'health.inactive' })}
+        </Tag>
+      ),
+    },
+    {
+      title: intl.formatMessage({ id: 'health.colEcoDriving' }),
+      key: 'ecoDriving',
+      width: 100,
+      align: 'center',
+      render: (_, record) =>
+        record.IsEcoDrivingEnabled ? (
+          <CheckOutlined className="text-green-500" />
+        ) : (
+          <span className="text-gray-300">—</span>
+        ),
+    },
+  ]
 
   if (error) {
     return (
@@ -145,6 +142,8 @@ export default function HealthPage() {
       />
     )
   }
+
+  const dataSource = filteredVehicles.map(v => ({ ...v, key: v.Code }))
 
   return (
     <div className="flex flex-col gap-6">
@@ -157,130 +156,27 @@ export default function HealthPage() {
             {intl.formatMessage({ id: 'health.subtitle' })}
           </p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <AIInsightsButton active={showInsights} onClick={() => setShowInsights(v => !v)} />
-          <RangePicker
-            value={dateRange}
-            onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}
-            onChange={(dates) => {
-              if (dates?.[0] && dates?.[1]) {
-                setDateRange([dates[0], dates[1]])
-              }
-              setPickerDates([null, null])
-            }}
-            allowClear={false}
-            disabledDate={(current) => {
-              if (current.isAfter(dayjs())) return true
-              const selected = pickerDates[0] ?? pickerDates[1]
-              if (!selected) return false
-              return Math.abs(current.diff(selected, 'day')) > MAX_RANGE_DAYS
-            }}
-          />
-        </div>
+        <AIInsightsButton active={showInsights} onClick={() => setShowInsights(v => !v)} />
       </div>
 
-      <Row gutter={[16, 16]}>
-        <Col xs={12} lg={6}>
-          <StatCard
-            icon={<HeartOutlined />}
-            label={intl.formatMessage({ id: 'health.avgScore' })}
-            value={summary.avgHealthScore.toFixed(0)}
-            subtitle={intl.formatMessage({ id: 'health.avgScoreSub' })}
-            color={scoreColor}
-            bgColor={summary.avgHealthScore >= 75 ? '#f0fdf4' : summary.avgHealthScore >= 50 ? '#fffbeb' : '#fef2f2'}
-          />
-        </Col>
-        <Col xs={12} lg={6}>
-          <StatCard
-            icon={<CarOutlined />}
-            label={intl.formatMessage({ id: 'health.totalVehicles' })}
-            value={String(summary.totalVehicles)}
-            subtitle={intl.formatMessage({ id: 'health.activeNow' }, { count: summary.activeNow })}
-            color="#3b82f6"
-            bgColor="#eff6ff"
-          />
-        </Col>
-        <Col xs={12} lg={6}>
-          <StatCard
-            icon={<DashboardOutlined />}
-            label={intl.formatMessage({ id: 'health.avgOdometer' })}
-            value={`${(summary.avgOdometer / 1000).toFixed(0)}k km`}
-            subtitle={intl.formatMessage({ id: 'health.avgOdometerSub' })}
-            color="#8b5cf6"
-            bgColor="#f5f3ff"
-          />
-        </Col>
-        <Col xs={12} lg={6}>
-          <StatCard
-            icon={<WarningOutlined />}
-            label={intl.formatMessage({ id: 'health.issues' })}
-            value={String(summary.warningHealth + summary.criticalHealth)}
-            subtitle={intl.formatMessage({ id: 'health.issuesSub' })}
-            color="#f59e0b"
-            bgColor="#fffbeb"
-          />
-        </Col>
-      </Row>
-
-      <InsightCards module="health" visible={showInsights} data={useMemo(() => ({
-        summary: { ...summary },
-        vehicles: healthData.map(v => ({
-          name: v.vehicleName,
-          score: v.healthScore,
-          status: v.status,
-          odometer: v.odometer,
-          trips: v.totalTrips,
-          fuelEfficiency: v.fuelEfficiency,
-          speedingEvents: v.speedingEvents,
-        })),
-      }), [summary, healthData])} />
-
-      <Card styles={{ body: { padding: '20px' } }}>
-        <h3 className="text-sm font-semibold text-gray-900 m-0 mb-4">
-          {intl.formatMessage({ id: 'health.fleetOverview' })}
-        </h3>
-        <div className="flex items-center gap-4 mb-4 flex-wrap">
-          <StatusBadge
-            count={summary.goodHealth}
-            label={intl.formatMessage({ id: 'health.good' })}
-            icon={<CheckCircleOutlined />}
-            color="#22c55e"
-            bgColor="#f0fdf4"
-          />
-          <StatusBadge
-            count={summary.warningHealth}
-            label={intl.formatMessage({ id: 'health.warning' })}
-            icon={<ExclamationCircleOutlined />}
-            color="#f59e0b"
-            bgColor="#fffbeb"
-          />
-          <StatusBadge
-            count={summary.criticalHealth}
-            label={intl.formatMessage({ id: 'health.critical' })}
-            icon={<CloseCircleOutlined />}
-            color="#ef4444"
-            bgColor="#fef2f2"
-          />
-        </div>
-        <Progress
-          percent={summary.totalVehicles > 0 ? Math.round((summary.goodHealth / summary.totalVehicles) * 100) : 0}
-          strokeColor="#22c55e"
-          railColor="#fef2f2"
-          showInfo={false}
-        />
-        <div className="text-xs text-gray-400 mt-1">
-          {intl.formatMessage(
-            { id: 'health.fleetHealthBar' },
-            { good: summary.goodHealth, total: summary.totalVehicles },
-          )}
-        </div>
-      </Card>
+      <InsightCards module="health" visible={showInsights} data={insightData} />
 
       <div>
-        <h2 className="text-base font-semibold text-gray-900 m-0 mb-3">
-          {intl.formatMessage({ id: 'health.vehicleDetails' })}
-        </h2>
-        <VehicleHealthTable data={healthData} loading={isLoading} />
+        <Input.Search
+          placeholder={intl.formatMessage({ id: 'health.searchPlaceholder' })}
+          allowClear
+          onChange={e => setSearch(e.target.value)}
+          className="mb-4"
+          style={{ maxWidth: 400 }}
+        />
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          loading={isLoading}
+          pagination={false}
+          size="middle"
+          scroll={{ x: 900 }}
+        />
       </div>
     </div>
   )

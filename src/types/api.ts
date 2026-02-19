@@ -56,13 +56,19 @@ export interface Trip {
   TripCost: { Value: number; Currency: number }
 }
 
-export interface SensorReading {
-  Name: string
-  UnitType: string
-  Values: {
-    Timestamp: string
-    Value: number
-  }[]
+export interface SensorDataPoint {
+  t: string
+  v: number
+}
+
+export interface SensorItem {
+  name: string
+  units: string
+  data: SensorDataPoint[]
+}
+
+export interface SensorResponse {
+  items: SensorItem[]
 }
 
 export interface EcoDrivingEvent {

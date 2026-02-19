@@ -5,6 +5,7 @@ import FleetPage from '@/modules/fleet/FleetPage'
 import DriversPage from '@/modules/drivers/DriversPage'
 import FuelPage from '@/modules/fuel/FuelPage'
 import HealthPage from '@/modules/health/HealthPage'
+import VehicleDetailPage from '@/modules/health/VehicleDetailPage'
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
       { path: 'drivers', element: <DriversPage /> },
       { path: 'fuel', element: <FuelPage /> },
       { path: 'health', element: <HealthPage /> },
+      { path: 'health/:vehicleCode', element: <VehicleDetailPage /> },
     ],
   },
 ])

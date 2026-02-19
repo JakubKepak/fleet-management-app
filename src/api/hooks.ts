@@ -1,7 +1,7 @@
 import { useQuery, useQueries } from '@tanstack/react-query'
 import { apiGet } from '@/api/client'
 import { groupKeys, vehicleKeys } from '@/api/queryKeys'
-import type { Group, Vehicle, Trip } from '@/types/api'
+import type { Group, Vehicle, Trip, SensorResponse } from '@/types/api'
 
 export function useGroups() {
   return useQuery({
@@ -32,6 +32,22 @@ export function useTrips(vehicleCode: string, from: string, to: string) {
     queryKey: vehicleKeys.trips(vehicleCode, from, to),
     queryFn: () => apiGet<Trip[]>(`/vehicle/${vehicleCode}/trips?from=${from}&to=${to}`),
     enabled: !!vehicleCode && !!from && !!to,
+  })
+}
+
+export function useVehicleSensors(
+  vehicleCode: string,
+  sensorTypes: string[],
+  from: string,
+  to: string,
+) {
+  return useQuery({
+    queryKey: vehicleKeys.sensors(vehicleCode, sensorTypes, from, to),
+    queryFn: () =>
+      apiGet<SensorResponse>(
+        `/vehicle/${vehicleCode}/sensors/${sensorTypes.join(',')}?from=${from}&to=${to}`,
+      ),
+    enabled: !!vehicleCode && sensorTypes.length > 0 && !!from && !!to,
   })
 }
 
