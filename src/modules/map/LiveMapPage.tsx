@@ -62,13 +62,21 @@ function VehicleMarker({
           position={{ lat, lng }}
           onCloseClick={() => onSelect(null)}
           pixelOffset={[0, -36]}
+          headerDisabled
         >
-          <div className="min-w-[160px]">
+          <div className="relative min-w-35 pr-6">
+            <button
+              onClick={() => onSelect(null)}
+              className="absolute -top-0.5 right-0 flex items-center justify-center w-5 h-5 rounded-full bg-transparent border-0 cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors text-xs leading-none"
+              aria-label="Close"
+            >
+              ✕
+            </button>
             <div className="font-semibold text-sm">{vehicle.Name}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{vehicle.SPZ}</div>
+            <div className="text-xs text-gray-400 mt-0.5">{vehicle.SPZ}</div>
             <div className="flex items-center gap-1.5 mt-1.5">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-              <span className="text-xs">{getStatusLabel()}</span>
+              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+              <span className="text-xs text-gray-600">{getStatusLabel()}</span>
             </div>
             <div className="text-xs text-gray-400 mt-1">{vehicle.BranchName}</div>
           </div>
