@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps'
 import { EnvironmentOutlined } from '@ant-design/icons'
 import { useIntl } from 'react-intl'
@@ -75,9 +75,10 @@ function VehicleMarker({ vehicle, isSelected, onSelect }: VehicleMarkerProps) {
 
 function FitBounds({ vehicles }: { vehicles: Vehicle[] }) {
   const map = useMap()
+  const hasFitted = useRef(false)
 
   useEffect(() => {
-    if (!map || vehicles.length === 0) return
+    if (!map || vehicles.length === 0 || hasFitted.current) return
 
     const bounds = new google.maps.LatLngBounds()
     let hasValid = false
@@ -93,6 +94,7 @@ function FitBounds({ vehicles }: { vehicles: Vehicle[] }) {
 
     if (hasValid) {
       map.fitBounds(bounds, 50)
+      hasFitted.current = true
     }
   }, [map, vehicles])
 

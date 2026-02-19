@@ -27,11 +27,12 @@ export function useVehicle(vehicleCode: string) {
   })
 }
 
-export function useTrips(vehicleCode: string, from: string, to: string) {
+export function useTrips(vehicleCode: string, from: string, to: string, refetchInterval?: number) {
   return useQuery({
     queryKey: vehicleKeys.trips(vehicleCode, from, to),
     queryFn: () => apiGet<Trip[]>(`/vehicle/${vehicleCode}/trips?from=${from}&to=${to}`),
     enabled: !!vehicleCode && !!from && !!to,
+    refetchInterval,
   })
 }
 

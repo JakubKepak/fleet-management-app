@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps'
 import { EnvironmentOutlined, SearchOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons'
 import { Input } from 'antd'
@@ -79,12 +80,12 @@ function VehicleMarker({
 
 // ── Map helpers ─────────────────────────────────────────────────
 
-function FitBounds({ vehicles }: { vehicles: Vehicle[] }) {
+function FitBounds({ vehicles, skip }: { vehicles: Vehicle[]; skip?: boolean }) {
   const map = useMap()
   const hasFitted = useRef(false)
 
   useEffect(() => {
-    if (!map || vehicles.length === 0 || hasFitted.current) return
+    if (!map || vehicles.length === 0 || hasFitted.current || skip) return
     const bounds = new google.maps.LatLngBounds()
     let hasValid = false
     vehicles.forEach(v => {
@@ -99,7 +100,7 @@ function FitBounds({ vehicles }: { vehicles: Vehicle[] }) {
       map.fitBounds(bounds, 50)
       hasFitted.current = true
     }
-  }, [map, vehicles])
+  }, [map, vehicles, skip])
 
   return null
 }
@@ -109,7 +110,8 @@ function FocusVehicle({ vehicleCode, vehicles }: { vehicleCode: string | null; v
   const prevCode = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!map || !vehicleCode || vehicleCode === prevCode.current) return
+    if (!map || !vehicleCode || vehicles.length === 0) return
+    if (vehicleCode === prevCode.current) return
     prevCode.current = vehicleCode
 
     const vehicle = vehicles.find(v => v.Code === vehicleCode)
@@ -205,7 +207,7 @@ function useActiveTripRoute(vehicleCode: string | null) {
     ]
   }, [])
 
-  const { data: trips } = useTrips(vehicleCode ?? '', startOfDay, endOfDay)
+  const { data: trips } = useTrips(vehicleCode ?? '', startOfDay, endOfDay, vehicleCode ? 30_000 : undefined)
 
   // Pick unfinished trip, or the last trip in the array (most recent)
   const activeTrip = useMemo((): Trip | null => {
@@ -429,7 +431,18 @@ function MapPlaceholder() {
 // ── Main page ───────────────────────────────────────────────────
 
 export default function LiveMapPage() {
-  const [selectedCode, setSelectedCode] = useState<string | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedCode = searchParams.get('vehicle')
+  const setSelectedCode = useCallback((code: string | null) => {
+    setSearchParams(prev => {
+      if (code) {
+        prev.set('vehicle', code)
+      } else {
+        prev.delete('vehicle')
+      }
+      return prev
+    }, { replace: true })
+  }, [setSearchParams])
   const [panelCollapsed, setPanelCollapsed] = useState(false)
 
   const { data: groups } = useGroups()
@@ -454,7 +467,7 @@ export default function LiveMapPage() {
           disableDefaultUI
           zoomControl
         >
-          <FitBounds vehicles={vehicles ?? []} />
+          <FitBounds vehicles={vehicles ?? []} skip={!!selectedCode} />
           <FocusVehicle vehicleCode={selectedCode} vehicles={vehicles ?? []} />
 
           {(vehicles ?? []).map(v => (
