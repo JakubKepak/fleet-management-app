@@ -8,15 +8,19 @@ import {
   BarChartOutlined,
   ToolOutlined,
   GlobalOutlined,
+  RobotOutlined,
+  CloseOutlined,
 } from '@ant-design/icons'
 import { useIntl } from 'react-intl'
 import { useLocale } from '@/i18n/LocaleContext'
 import { useGroups, useVehicles } from '@/api/hooks'
+import ChatPanel from '@/modules/ai/ChatPanel'
 
 const { Sider, Content } = Layout
 
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const { locale, changeLocale } = useLocale()
@@ -127,6 +131,57 @@ export default function AppLayout() {
           <Outlet />
         </Content>
       </Layout>
+
+      {/* Intercom-style chat bubble */}
+      <button
+        onClick={() => setChatOpen(o => !o)}
+        className="fixed z-50 flex items-center justify-center w-14 h-14 rounded-full border-0 cursor-pointer shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+        style={{
+          right: 24,
+          bottom: 24,
+          background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
+        }}
+        aria-label={intl.formatMessage({ id: 'ai.title' })}
+      >
+        {chatOpen ? (
+          <CloseOutlined className="text-white text-lg" />
+        ) : (
+          <RobotOutlined className="text-white text-xl" />
+        )}
+      </button>
+
+      {/* Intercom-style popup chat */}
+      {chatOpen && (
+        <div
+          className="fixed z-40 flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden"
+          style={{
+            right: 24,
+            bottom: 96,
+            width: 380,
+            height: 520,
+            border: '1px solid rgba(0,0,0,0.08)',
+          }}
+        >
+          <div
+            className="flex items-center gap-3 px-4 py-3 shrink-0"
+            style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
+              <RobotOutlined className="text-white text-sm" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-white font-semibold text-sm">
+                {intl.formatMessage({ id: 'ai.title' })}
+              </div>
+              <div className="text-white/70 text-xs">
+                {intl.formatMessage({ id: 'ai.subtitle' })}
+              </div>
+            </div>
+          </div>
+
+          <ChatPanel compact />
+        </div>
+      )}
     </Layout>
   )
 }

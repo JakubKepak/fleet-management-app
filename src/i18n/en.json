@@ -145,5 +145,19 @@
 
   "insights.title": "AI Insights",
   "insights.button": "AI Insights",
-  "insights.error": "AI insights temporarily unavailable"
+  "insights.error": "AI insights temporarily unavailable",
+
+  "nav.ai": "AI Assistant",
+  "ai.title": "AI Assistant",
+  "ai.subtitle": "Ask anything about your fleet",
+  "ai.placeholder": "Type a message…",
+  "ai.send": "Send",
+  "ai.clear": "Clear chat",
+  "ai.error": "Sorry, something went wrong. Please try again.",
+  "ai.rateLimited": "AI request limit exceeded. Please try again in a moment.",
+  "ai.welcomeTitle": "Fleet AI Assistant",
+  "ai.welcomeSubtitle": "Ask about vehicle status, fuel consumption, drivers, and other fleet information.",
+  "ai.suggestStatus": "What is the current fleet status?",
+  "ai.suggestMileage": "Which vehicles have the highest mileage?",
+  "ai.suggestFuel": "How is fuel consumption looking?"
 }

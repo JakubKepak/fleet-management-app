@@ -145,5 +145,19 @@
 
   "insights.title": "AI Doporučení",
   "insights.button": "AI Analýza",
-  "insights.error": "AI doporučení dočasně nedostupná"
+  "insights.error": "AI doporučení dočasně nedostupná",
+
+  "nav.ai": "AI Asistent",
+  "ai.title": "AI Asistent",
+  "ai.subtitle": "Zeptejte se na cokoli o vaší flotile",
+  "ai.placeholder": "Napište zprávu…",
+  "ai.send": "Odeslat",
+  "ai.clear": "Vymazat chat",
+  "ai.error": "Omlouváme se, došlo k chybě. Zkuste to znovu.",
+  "ai.rateLimited": "Byl překročen limit požadavků na AI. Zkuste to prosím za chvíli.",
+  "ai.welcomeTitle": "AI Asistent flotily",
+  "ai.welcomeSubtitle": "Zeptejte se na stav vozidel, spotřebu paliva, řidiče a další informace o vaší flotile.",
+  "ai.suggestStatus": "Jaký je aktuální stav flotily?",
+  "ai.suggestMileage": "Která vozidla mají nejvyšší nájezd?",
+  "ai.suggestFuel": "Jak si stojí spotřeba paliva?"
 }

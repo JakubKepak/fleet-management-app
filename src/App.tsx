@@ -6,6 +6,7 @@ import { ConfigProvider } from 'antd'
 import { router } from '@/routes'
 import { messages, getLocale } from '@/i18n'
 import { LocaleContext } from '@/i18n/LocaleContext'
+import { ChatProvider } from '@/modules/ai/ChatContext'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,7 +36,9 @@ export default function App() {
               },
             }}
           >
-            <RouterProvider router={router} />
+            <ChatProvider>
+              <RouterProvider router={router} />
+            </ChatProvider>
           </ConfigProvider>
         </QueryClientProvider>
       </IntlProvider>
