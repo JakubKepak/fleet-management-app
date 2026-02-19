@@ -140,17 +140,12 @@ export default function VehicleDetailPage() {
     to,
   )
 
-  const sensors = sensorResponse?.items ?? []
-
-  const getSensor = useCallback(
-    (name: string) => sensors.find(s => s.name === name),
-    [sensors],
-  )
+  const sensors = useMemo(() => sensorResponse?.items ?? [], [sensorResponse])
 
   const gaugeCards = useMemo(() => {
     const items: { name: string; value: number | null; unit: string }[] = []
     for (const name of SENSOR_TYPES) {
-      const sensor = getSensor(name)
+      const sensor = sensors.find(s => s.name === name)
       items.push({
         name,
         value: getLastReading(sensor),
@@ -158,7 +153,7 @@ export default function VehicleDetailPage() {
       })
     }
     return items
-  }, [getSensor])
+  }, [sensors])
 
   const handleDateChange = useCallback((dates: [Dayjs | null, Dayjs | null] | null) => {
     if (dates?.[0] && dates?.[1]) {
@@ -184,16 +179,30 @@ export default function VehicleDetailPage() {
           <ArrowLeftOutlined className="text-xs" />
           {intl.formatMessage({ id: 'health.backToList' })}
         </Link>
-        {vehicleLoading ? (
-          <Skeleton active paragraph={{ rows: 1 }} />
-        ) : vehicle ? (
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 m-0">{vehicle.Name}</h1>
-            <p className="text-gray-500 text-sm mt-1 mb-0">
-              {vehicle.SPZ} · {vehicle.BranchName}
-            </p>
-          </div>
-        ) : null}
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          {vehicleLoading ? (
+            <Skeleton active paragraph={{ rows: 1 }} />
+          ) : vehicle ? (
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 m-0">{vehicle.Name}</h1>
+              <p className="text-gray-500 text-sm mt-1 mb-0">
+                {vehicle.SPZ} · {vehicle.BranchName}
+              </p>
+            </div>
+          ) : null}
+          <RangePicker
+            value={dateRange}
+            onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}
+            onChange={handleDateChange}
+            allowClear={false}
+            disabledDate={(current) => {
+              if (current.isAfter(dayjs())) return true
+              const selected = pickerDates[0] ?? pickerDates[1]
+              if (!selected) return false
+              return Math.abs(current.diff(selected, 'day')) > MAX_RANGE_DAYS
+            }}
+          />
+        </div>
       </div>
 
       <Row gutter={[16, 16]}>
@@ -252,23 +261,9 @@ export default function VehicleDetailPage() {
         <VehicleTripEconomics vehicle={vehicle} from={from} to={to} />
       )}
 
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <h2 className="text-base font-semibold text-gray-900 m-0">
-          {intl.formatMessage({ id: 'health.sensorHistory' })}
-        </h2>
-        <RangePicker
-          value={dateRange}
-          onCalendarChange={(dates) => setPickerDates(dates ?? [null, null])}
-          onChange={handleDateChange}
-          allowClear={false}
-          disabledDate={(current) => {
-            if (current.isAfter(dayjs())) return true
-            const selected = pickerDates[0] ?? pickerDates[1]
-            if (!selected) return false
-            return Math.abs(current.diff(selected, 'day')) > MAX_RANGE_DAYS
-          }}
-        />
-      </div>
+      <h2 className="text-base font-semibold text-gray-900 m-0">
+        {intl.formatMessage({ id: 'health.sensorHistory' })}
+      </h2>
 
       {sensorsLoading ? (
         <Row gutter={[16, 16]}>
@@ -284,7 +279,7 @@ export default function VehicleDetailPage() {
       ) : (
         <Row gutter={[16, 16]}>
           {SENSOR_TYPES.map(name => {
-            const sensor = getSensor(name)
+            const sensor = sensors.find(s => s.name === name)
             if (!sensor) {
               return (
                 <Col xs={24} lg={12} key={name}>

@@ -132,7 +132,7 @@ export default function FleetPage() {
 
   const isLoading = groupsLoading || vehiclesLoading || tripsLoading
 
-  const tripList = trips ?? []
+  const tripList = useMemo(() => trips ?? [], [trips])
   const totalDistance = useMemo(() => tripList.reduce((sum, t) => sum + n(t.TotalDistance), 0), [tripList])
   const uniqueDrivers = useMemo(
     () => new Set(tripList.map(t => (t.DriverName ?? '').trim()).filter(Boolean)).size,
@@ -142,6 +142,22 @@ export default function FleetPage() {
     () => new Set(tripList.map(t => t.vehicleCode)).size,
     [tripList],
   )
+
+  const insightData = useMemo(() => ({
+    trips: tripList.length,
+    totalDistance: totalDistance,
+    uniqueVehicles,
+    uniqueDrivers,
+    vehicles: selectedVehicles.map(v => {
+      const vTrips = tripList.filter(t => t.vehicleCode === v.Code)
+      return {
+        name: v.Name,
+        trips: vTrips.length,
+        totalDistance: vTrips.reduce((s, t) => s + n(t.TotalDistance), 0),
+        avgSpeed: vTrips.length > 0 ? vTrips.reduce((s, t) => s + n(t.AverageSpeed), 0) / vTrips.length : 0,
+      }
+    }),
+  }), [tripList, totalDistance, uniqueVehicles, uniqueDrivers, selectedVehicles])
 
   if (error) {
     return (
@@ -234,21 +250,7 @@ export default function FleetPage() {
         </Col>
       </Row>
 
-      <InsightCards module="fleet" visible={showInsights} data={useMemo(() => ({
-        trips: tripList.length,
-        totalDistance: totalDistance,
-        uniqueVehicles,
-        uniqueDrivers,
-        vehicles: selectedVehicles.map(v => {
-          const vTrips = tripList.filter(t => t.vehicleCode === v.Code)
-          return {
-            name: v.Name,
-            trips: vTrips.length,
-            totalDistance: vTrips.reduce((s, t) => s + n(t.TotalDistance), 0),
-            avgSpeed: vTrips.length > 0 ? vTrips.reduce((s, t) => s + n(t.AverageSpeed), 0) / vTrips.length : 0,
-          }
-        }),
-      }), [tripList, totalDistance, uniqueVehicles, uniqueDrivers, selectedVehicles])} />
+      <InsightCards module="fleet" visible={showInsights} data={insightData} />
 
       <TripTable trips={tripList} loading={isLoading} />
     </div>

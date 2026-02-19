@@ -74,31 +74,44 @@ export function computeVehicleEconomics(vehicle: Vehicle, trips: Trip[]): Vehicl
 export interface DailyFuelPoint {
   date: string
   fuel: number
+  cost: number
   distance: number
   trips: number
+  /** L/100km for the day, 0 when no distance */
+  efficiency: number
 }
 
 export function computeDailyFuel(trips: Trip[]): DailyFuelPoint[] {
-  const dayMap = new Map<string, { fuel: number; distance: number; trips: number }>()
+  const dayMap = new Map<string, { fuel: number; cost: number; distance: number; fuelDistance: number; trips: number }>()
 
   for (const trip of trips) {
     const date = trip.StartTime?.slice(0, 10) ?? ''
     if (!date) continue
 
-    const existing = dayMap.get(date)
     const fuel = safeNum(trip.FuelConsumed?.Value)
+    const cost = safeNum(trip.TripCost?.Value)
     const dist = safeNum(trip.TotalDistance)
 
+    const existing = dayMap.get(date)
     if (existing) {
       existing.fuel += fuel
+      existing.cost += cost
       existing.distance += dist
+      if (fuel > 0) existing.fuelDistance += dist
       existing.trips += 1
     } else {
-      dayMap.set(date, { fuel, distance: dist, trips: 1 })
+      dayMap.set(date, { fuel, cost, distance: dist, fuelDistance: fuel > 0 ? dist : 0, trips: 1 })
     }
   }
 
   return Array.from(dayMap.entries())
-    .map(([date, v]) => ({ date, ...v }))
+    .map(([date, v]) => ({
+      date,
+      fuel: v.fuel,
+      cost: v.cost,
+      distance: v.distance,
+      trips: v.trips,
+      efficiency: v.fuelDistance > 0 ? (v.fuel / v.fuelDistance) * 100 : 0,
+    }))
     .sort((a, b) => a.date.localeCompare(b.date))
 }

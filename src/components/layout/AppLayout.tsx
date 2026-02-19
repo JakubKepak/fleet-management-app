@@ -4,7 +4,6 @@ import { Layout, Menu, Badge, Select } from 'antd'
 import {
   DashboardOutlined,
   CarOutlined,
-  BarChartOutlined,
   ToolOutlined,
   GlobalOutlined,
   RobotOutlined,
@@ -33,7 +32,6 @@ export default function AppLayout() {
 
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: intl.formatMessage({ id: 'nav.dashboard' }) },
-    { key: '/fuel', icon: <BarChartOutlined />, label: intl.formatMessage({ id: 'nav.fuel' }) },
     { key: '/fleet', icon: <CarOutlined />, label: intl.formatMessage({ id: 'nav.fleet' }) },
     { key: '/health', icon: <ToolOutlined />, label: intl.formatMessage({ id: 'nav.health' }) },
   ]
