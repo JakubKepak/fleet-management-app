@@ -194,27 +194,29 @@ function TripStartMarker({ position, label }: { position: PositionPoint; label: 
 // ── Active trip hook ────────────────────────────────────────────
 
 function useActiveTripRoute(vehicleCode: string | null) {
-  const now = dayjs()
-  const startOfDay = now.startOf('day').format('YYYY-MM-DDTHH:mm:ss')
-  const endOfDay = now.format('YYYY-MM-DDTHH:mm:ss')
+  // Stable time range — computed once to prevent query key churn on re-renders
+  const [startOfDay, endOfDay] = useMemo(() => {
+    const now = dayjs()
+    return [
+      now.startOf('day').format('YYYY-MM-DDTHH:mm:ss'),
+      now.endOf('day').format('YYYY-MM-DDTHH:mm:ss'),
+    ]
+  }, [])
 
   const { data: trips } = useTrips(vehicleCode ?? '', startOfDay, endOfDay)
 
+  // Pick unfinished trip, or the last trip in the array (most recent)
   const activeTrip = useMemo((): Trip | null => {
     if (!trips?.length) return null
     const unfinished = trips.find(t => !t.IsFinished)
     if (unfinished) return unfinished
-    return [...trips].sort(
-      (a, b) => new Date(b.StartTime).getTime() - new Date(a.StartTime).getTime(),
-    )[0]
+    return trips[trips.length - 1]
   }, [trips])
-
-  const historyTo = activeTrip && activeTrip.IsFinished ? activeTrip.FinishTime : endOfDay
 
   const { data: positions } = usePositionHistory(
     vehicleCode ? [vehicleCode] : [],
     activeTrip?.StartTime ?? '',
-    historyTo,
+    endOfDay,
     activeTrip && !activeTrip.IsFinished ? 15_000 : undefined,
   )
 
