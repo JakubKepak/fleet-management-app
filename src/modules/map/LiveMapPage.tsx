@@ -306,8 +306,8 @@ function VehicleListPanel({
 
   return (
     <div
-      className="absolute top-4 left-4 bottom-4 z-10 flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden"
-      style={{ width: 320, border: '1px solid rgba(0,0,0,0.08)' }}
+      className="absolute top-4 left-4 z-10 flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden"
+      style={{ width: 320, maxHeight: 'calc(100% - 32px)', border: '1px solid rgba(0,0,0,0.08)' }}
     >
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2.5 border-b border-gray-100 shrink-0">
@@ -511,8 +511,6 @@ export default function LiveMapPage() {
         collapsed={panelCollapsed}
         onToggleCollapse={() => setPanelCollapsed(c => !c)}
       />
-
-      <MapLegend />
 
       {activeTrip && selectedCode && <TripInfoBar trip={activeTrip} />}
     </div>
